@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "invenApp",
+    "slug": "invenApp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.anonymous.invenApp"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-sqlite",
+      "@react-native-community/datetimepicker",
+      "expo-asset",
+      [
+        "expo-image-picker",
+        {
+            "cameraPermission": "Izinkan aplikasi mengakses galeri untuk memilih foto bahan."
+        }
+      ],
+
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow invenApp to access your photos.",
+          "savePhotosPermission": "Allow invenApp to save photos.",
+          "isAccessMediaLocationEnabled": true,
+          "granularPermissions": ["audio", "photo"]
+        }
+      ]
+    ]
+  }
+}
