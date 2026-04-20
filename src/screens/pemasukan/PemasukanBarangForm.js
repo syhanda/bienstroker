@@ -12,18 +12,17 @@ import TanggalInputComponent from '../../components/TanggalInputComponent';
 import MoadalInputBahan from '../../components/ModalInputBahan';
 import { getAllBahan } from '../../database/bahan';
 import { insertPemasukan } from '../../database/pemasukan';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { sendLowStockNotification } from '../../components/StockNotification';
 import { useSubmitGuard } from '../../hooks/submitGuard';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function PemasukanBarangForm() {
+export default function PemasukanBarangForm({ navigation }) {
   const [tanggal, setTanggal] = useState(new Date());
   const [keranjangPemasukan, setKeranjangPemasukan] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [daftarBahanDB, setDaftarBahanDB] = useState([]);
-  const navigation = useNavigation();
   const { isSubmitting, withGuard } = useSubmitGuard();
 
     useFocusEffect(
@@ -134,7 +133,7 @@ export default function PemasukanBarangForm() {
                     <Text style={styles.jumlahBahan}>{item.jumlah}{item.satuan} ditambahkan</Text>
                 </View>
                 <TouchableOpacity onPress={() => hapusItem(item.id)}>
-                    <Ionicons name={"trash"} color='#000000' size={22} />
+                    <Ionicons name={"trash"} color='#d33131' size={22} />
                 </TouchableOpacity>
             </View>
             )}
@@ -161,9 +160,8 @@ export default function PemasukanBarangForm() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8F9FA', padding: 20 },
+  container: { flex: 1, backgroundColor: '#F5F7FA', paddingHorizontal: 20, paddingTop: 15 },
   title: { fontSize: 22, fontWeight: 'bold', color: '#333', marginBottom: 20 },
-  // section: { marginBottom: 10 },
   sectionLabel: { fontSize: 16, fontWeight: 'bold', color: '#555' },
   listHeader: { 
     flexDirection: 'row', 
@@ -171,8 +169,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10
   },
-  btnAdd: { backgroundColor: '#000', paddingVertical: 10, paddingHorizontal: 15, borderRadius: 8 }, //FF9800
-  btnAddText: { color: '#FFF', fontWeight: 'bold', fontSize: 12 },
+  btnAdd: { backgroundColor: '#E0F2F1', paddingVertical: 10, paddingHorizontal: 15, borderRadius: 8 }, //FF9800
+  btnAddText: { color: '#1A535C', fontWeight: 'bold', fontSize: 12 },
   cardItem: { 
     backgroundColor: '#FFF', 
     padding: 15, 
@@ -195,6 +193,6 @@ const styles = StyleSheet.create({
     padding: 20, 
     backgroundColor: '#F8F9FA' 
   },
-  btnSimpan: { backgroundColor: '#000', padding: 16, borderRadius: 12, alignItems: 'center' }, //4CAF50
-  btnSimpanText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' }
+  btnSimpan: { backgroundColor: '#00695C',  padding: 16, borderRadius: 12, alignItems: 'center' }, //4CAF50
+  btnSimpanText: { color: '#fff', fontSize: 16, fontWeight: 'bold' }
 });

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useContext } from 'react';
 import {
   View,
   Text,
@@ -6,14 +6,16 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { getAllBahan } from '../../database/bahan';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { sendLowStockNotification } from '../../components/StockNotification';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { AuthContext } from '../../AuthContext';
 
-export default function HalamanBahan() {
+export default function HalamanBahan({ navigation }) {
   const [daftarBahan, setDaftarBahan] = useState([]);
-  const navigation = useNavigation();
+  const { user } = useContext(AuthContext);
 
     useFocusEffect(
         useCallback(() => {
@@ -58,7 +60,7 @@ export default function HalamanBahan() {
               {item.stok}{item.satuan}
             </Text>
           </View>
-          <Text style={styles.minStok} >Min: {item.min_stok}</Text>
+          <Text style={styles.minStok} >Min: {item.min_stok}{item.satuan}</Text>
           {isKritis && <Text style={styles.warningText}>⚠️ Perlu Order Lagi!</Text>}
         </View>
         <Text style={styles.panah}>❯</Text>
@@ -71,13 +73,18 @@ export default function HalamanBahan() {
       <View style={styles.header}>
         <View style={styles.buttonRow}>
           
-          <TouchableOpacity 
-            style={[styles.actionBtn, { backgroundColor: '#000' }]} //'#4CAF50' }]}
-            onPress={() => navigation.navigate('bahanForm', { itemId: null })}
-          >
-            <Text style={styles.btnIcon}>➕</Text>
-            <Text style={styles.btnLabel}>Barang Baru</Text>
-          </TouchableOpacity>
+          {(user.level == 'admin') ? (
+            <TouchableOpacity 
+              style={styles.actionBtn}
+              onPress={() => navigation.navigate('bahanForm', { itemId: null })}
+            >
+              <Ionicons style={styles.btnIcon} name="add" size={21} color="#00695C" />
+              <Text style={styles.btnLabel}>Barang Baru</Text>
+            </TouchableOpacity>
+          ) : (
+            <View></View>
+          )}
+          
 
         </View>
       </View>
@@ -96,46 +103,155 @@ export default function HalamanBahan() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8F9FA' },
-  header: { padding: 20, backgroundColor: '#FFF', elevation: 2 },
-  title: { fontSize: 22, fontWeight: 'bold', color: '#333', marginBottom: 15 },
-  buttonRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  
-  actionBtn: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    paddingVertical: 10, 
-    paddingHorizontal: 15, 
-    borderRadius: 10,
-    // width: '48%',
-    justifyContent: 'center'
+  container: {
+    flex: 1,
+    backgroundColor: '#F3F6FA', // Background abu-abu muda dashboard
   },
-  btnIcon: { fontSize: 16, marginRight: 8 },
-  btnLabel: { color: '#FFF', fontWeight: 'bold', fontSize: 13 },
-
-  listContent: { padding: 15 },
-  card: { 
-    backgroundColor: '#FFF', 
-    padding: 16, 
-    borderRadius: 12, 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    marginBottom: 12,
-    elevation: 3,
+  header: {
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: '#F3F6FA',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    marginBottom: 5,
+  },
+  // --- Styling Tombol "Barang Baru" ---
+  actionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E3F2FD', // Biru charcoal dashboard
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
-  cardInfo: { flex: 1 },
-  namaBahan: { fontSize: 16, fontWeight: 'bold', color: '#444' },
-  rowStok: { flexDirection: 'row', alignItems: 'center', marginTop: 5 },
-  labelStok: { fontSize: 14, color: '#777' },
-  angkaStok: { fontSize: 14, fontWeight: 'bold' },
-  minStok: { fontSize: 12, color: '#999' },
-  textAman: { color: '#4CAF50' },
-  textBahaya: { color: '#F44336' },
-  warningText: { fontSize: 11, color: '#F44336', fontWeight: 'bold', marginTop: 4 },
-  panah: { fontSize: 18, color: '#CCC', marginLeft: 10 },
-  emptyText: { textAlign: 'center', color: '#999', marginTop: 50 }
+  btnIcon: {
+    marginRight: 3,
+  },
+  btnLabel: {
+    color: '#000',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  // --- Styling FlatList & Card ---
+  listContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18, // Rounded besar agar senada menu dashboard
+    padding: 20,
+    marginBottom: 15,
+    // Box Shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  cardInfo: {
+    flex: 1,
+  },
+  namaBahan: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2C3E50', // Biru charcoal
+    marginBottom: 6,
+  },
+  rowStok: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  labelStok: {
+    fontSize: 14,
+    color: '#7F8C8D',
+  },
+  angkaStok: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  minStok: {
+    fontSize: 12,
+    color: '#95A5A6',
+    fontStyle: 'italic',
+  },
+  // --- Indikator Stok ---
+  textAman: {
+    color: '#27AE60', // Hijau seperti card masuk
+  },
+  textBahaya: {
+    color: '#E74C3C', // Merah peringatan
+  },
+  warningText: {
+    color: '#E67E22', // Oranye seperti card stok habis
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginTop: 5,
+  },
+  panah: {
+    fontSize: 18,
+    color: '#BDC3C7',
+    marginLeft: 10,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 50,
+    color: '#95A5A6',
+    fontSize: 16,
+  },
 });
+
+
+// const styles = StyleSheet.create({
+//   container: { flex: 1, backgroundColor: '#F8F9FA' },
+//   header: { padding: 20, backgroundColor: '#FFF', elevation: 2 },
+//   title: { fontSize: 22, fontWeight: 'bold', color: '#333', marginBottom: 15 },
+//   buttonRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  
+//   actionBtn: { 
+//     flexDirection: 'row', 
+//     alignItems: 'center', 
+//     paddingVertical: 10, 
+//     paddingHorizontal: 15, 
+//     borderRadius: 10,
+//     // width: '48%',
+//     justifyContent: 'center'
+//   },
+//   btnIcon: { fontSize: 16, marginRight: 8 },
+//   btnLabel: { color: '#FFF', fontWeight: 'bold', fontSize: 13 },
+
+//   listContent: { padding: 15 },
+//   card: { 
+//     backgroundColor: '#FFF', 
+//     padding: 16, 
+//     borderRadius: 12, 
+//     flexDirection: 'row', 
+//     alignItems: 'center', 
+//     marginBottom: 12,
+//     elevation: 3,
+//     shadowColor: '#000',
+//     shadowOffset: { width: 0, height: 1 },
+//     shadowOpacity: 0.1,
+//     shadowRadius: 3,
+//   },
+//   cardInfo: { flex: 1 },
+//   namaBahan: { fontSize: 16, fontWeight: 'bold', color: '#444' },
+//   rowStok: { flexDirection: 'row', alignItems: 'center', marginTop: 5 },
+//   labelStok: { fontSize: 14, color: '#777' },
+//   angkaStok: { fontSize: 14, fontWeight: 'bold' },
+//   minStok: { fontSize: 12, color: '#999' },
+//   textAman: { color: '#4CAF50' },
+//   textBahaya: { color: '#F44336' },
+//   warningText: { fontSize: 11, color: '#F44336', fontWeight: 'bold', marginTop: 4 },
+//   panah: { fontSize: 18, color: '#CCC', marginLeft: 10 },
+//   emptyText: { textAlign: 'center', color: '#999', marginTop: 50 }
+// });

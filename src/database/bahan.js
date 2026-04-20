@@ -34,7 +34,7 @@ export async function insertBahan(nama, satuan, minStok, gambar) {
 export async function getBarangHabis() {
     const db = await getDb();
     try {
-        return await db.getAllAsync('SELECT * FROM bahan WHERE stok <= min_stok');
+        return await db.getAllAsync('SELECT nama FROM bahan WHERE stok <= min_stok');
     } catch (error) {
         console.error('Error fetching barang:', error);
         return null;
@@ -75,10 +75,10 @@ export async function updateStokBahan(data) {
     }
 }
 
-export async function updateBahan(id, nama, minStok) {
+export async function updateBahan(id, nama, satuan, minStok, gambar) {
     const db = await getDb();
     try {
-        return await db.runAsync('UPDATE bahan SET nama = ?, min_stok = ? WHERE id = ?', nama, minStok, id);
+        return await db.runAsync('UPDATE bahan SET nama = ?, satuan = ?, min_stok = ?, gambar = ? WHERE id = ?', nama,satuan, minStok, gambar, id);
     } catch (error) {
         console.error('Error updating bahan:', error);
         return null;

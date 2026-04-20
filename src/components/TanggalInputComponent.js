@@ -31,7 +31,7 @@ export default function TanggalInputComponent({label, onDateChange}) {
       {/* Tombol pemicu DatePicker */}
       <TouchableOpacity style={styles.inputBox} onPress={() => setShow(true)}>
         <Text style={styles.inputText}>{text}</Text>
-        <Ionicons name={"calendar"} color='black' size={19} />
+        <Ionicons name={"calendar"} color='#1565C0' size={26} />
         {/* <Text style={styles.icon}></Text> */}
       </TouchableOpacity>
 
@@ -61,6 +61,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: '#fff',
   },
-  inputText: { fontSize: 16, color: '#333' },
+  inputText: { fontSize: 17, color: '#333' },
   icon: { fontSize: 18 }
 });

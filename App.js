@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import { View, ActivityIndicator, Linking, Alert, TouchableOpacity } from 'react-native';
+import { View, ActivityIndicator, Linking, Alert, TouchableOpacity, Platform } from 'react-native';
 import HomeScreen from './src/screens/HomeScreen';
 import PemakaianBarangScreen from './src/screens/pemakaian/PemakaianBarangScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -12,7 +12,7 @@ import LaporanScreen from './src/screens/laporan/LaporanScreen';
 import DetailBahanScreen from './src/screens/bahan/DetailBahanScreen';
 import PemasukanBarangDetail from './src/screens/pemasukan/PemasukanBarangDetail';
 import PemakaianBarangDetail from './src/screens/pemakaian/PemakaianBarangDetail';
-import { registerForPushNotificationsAsync } from './src/components/StockNotification';
+import { registerForPushNotificationsAsync, sendLowStockNotification } from './src/components/StockNotification';
 import PemasukanBarangScreen from './src/screens/pemasukan/PemasukanBarangScreen';
 import PemasukanBarangForm from './src/screens/pemasukan/PemasukanBarangForm';
 import LoginScreen from './src/screens/LoginScreen';
@@ -24,6 +24,10 @@ import { AuthProvider } from './src/AuthContext';
 import { AuthContext } from './src/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
+import * as TaskManager from 'expo-task-manager';
+import * as BackgroundTask from 'expo-background-task';
+import * as Notifications from 'expo-notifications';
+import { getBarangHabis } from './src/database/bahan';
 
 const Stack = createNativeStackNavigator();
 
@@ -58,14 +62,13 @@ function RootStack() {
                     <Stack.Screen name='bahanDetail' component={DetailBahanScreen} options={{ title: "Detail Barang" }} />
                     <Stack.Screen name='pemakaian' component={PemakaianBarangScreen} options={{ title: "Pemakaian Harian" }} />
                     <Stack.Screen name='pemakaianForm' component={PemakaianBarangForm} options={{ title: "Tambah Pemakaian Harian" }} />
-                    <Stack.Screen name='pemakaianDetail' component={PemakaianBarangDetail} options={{ title: "" }} />
+                    <Stack.Screen name='pemakaianDetail' component={PemakaianBarangDetail} options={{ title: "Detail Pemakaian" }} />
                     <Stack.Screen name='pemasukan' component={PemasukanBarangScreen} options={{ title: "kelola Stok Masuk" }} />
-                    <Stack.Screen name='pemasukanForm' component={PemasukanBarangForm} options={{ title: "" }} />
+                    <Stack.Screen name='pemasukanForm' component={PemasukanBarangForm} options={{ title: "Tambah Stok Masuk" }} />
                     <Stack.Screen name='pemasukanDetail' component={PemasukanBarangDetail} options={{ title: "Detail Stok Masuk" }} />
                     <Stack.Screen name='bahan' component={BahanScreen} options={{ title: "Stok Barang" }} />
                     <Stack.Screen name='stokBarangHabis' component={StokBarangHabisScreen} options={{ title: "Stok Barang Habis" }} />
-                    <Stack.Screen name='laporan' component={LaporanScreen} options={{ title: "Tambah Pemakaian Harian" }} />
-                    <Stack.Screen name='profile' component={ProfileScreen} options={{ title: "Profile" }} />
+                    <Stack.Screen name='laporan' component={LaporanScreen} options={{ title: "Laporan" }} />
                 </Stack.Group>
             )}
         </Stack.Navigator>
@@ -76,20 +79,13 @@ export default function App() {
     const [dbReady, setDbReady] = useState(false);
 
     useEffect(() => {
-      // Tangkap JS error yang tidak tertangkap
-      const errorHandler = (error, isFatal) => {
-          console.error(`[GlobalError] Fatal: ${isFatal}`, error);
-          // Kalau mau kirim ke server bisa tambahkan di sini
-      };
-      
-      ErrorUtils.setGlobalHandler(errorHandler);
-
         async function prep() {
             try {
                 await requestPermission();
                 await registerForPushNotificationsAsync();
                 await initDb();
-                // await seed();
+                await seed();
+
                 // Uncomment untuk reset DB saat development:
                 // const db = await getDb();
                 // db.execSync('DROP TABLE IF EXISTS pengguna; DROP TABLE IF EXISTS pemakaian_item; DROP TABLE IF EXISTS pemakaian; DROP TABLE IF EXISTS bahan; DROP TABLE IF EXISTS pemasukan; DROP TABLE IF EXISTS pemasukan_item;');
@@ -105,10 +101,10 @@ export default function App() {
             const statusKamera = await ImagePicker.requestCameraPermissionsAsync();
             
             // 2. Minta Izin Galeri (Media Library)
-            const statusGaleri = await MediaLibrary.getPermissionsAsync();
+            // const statusGaleri = await MediaLibrary.getPermissionsAsync();
 
             // Jika salah satu ditolak permanen
-            if (statusKamera.status !== 'granted' || statusGaleri.status !== 'none') {
+            if (statusKamera.status !== 'granted') {
                 Alert.alert(
                     "Izin Diperlukan",
                     "Aplikasi ini membutuhkan akses Kamera dan Galeri untuk mengelola foto bahan baku. Silakan aktifkan di Pengaturan.",

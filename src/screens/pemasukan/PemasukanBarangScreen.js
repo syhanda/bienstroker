@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { 
   View, 
   Text, 
@@ -8,12 +8,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getAllPemasukan } from '../../database/pemasukan';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { AuthContext } from '../../AuthContext';
 
-export default function PemasukanBarangScreen() {
+export default function PemasukanBarangScreen({ navigation }) {
   const [riwayatPemasukan, setRiwayatPemasukan] = useState([]);
-  const navigation = useNavigation();
+  const { user } = useContext(AuthContext);
 
     useFocusEffect(
         useCallback(() => {
@@ -60,9 +61,14 @@ export default function PemasukanBarangScreen() {
   return (
     <SafeAreaView edges={['left', 'right']} style={styles.container}>
         <View style={styles.header}>
-            <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate('pemasukanForm')}>
-                <Text style={styles.btnText}>Tambah pemasukan</Text>
-            </TouchableOpacity>
+            {(user.level == 'admin') ? (
+              <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate('pemasukanForm')}>
+                  <Ionicons style={styles.btnIcon} name="add" size={21} color="#00695C" />
+                  <Text style={styles.btnText}>Tambah pemasukan</Text>
+              </TouchableOpacity>
+            ) : (
+              <View></View>
+            )}
         </View>
 
         <FlatList
@@ -86,19 +92,28 @@ export default function PemasukanBarangScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F5F7FA' },
-  header: { padding: 20, backgroundColor: '#FFF', borderBottomWidth: 1, borderBottomColor: '#EEE' },
+  header: { 
+    paddingHorizontal: 20,
+    paddingTop: 15,
+    backgroundColor: '#F3F6FA', 
+  },
   actionBtn: {
-    backgroundColor: '#000', //'#2196F3',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E3F2FD',
     alignItems: 'center', 
     paddingVertical: 10, 
     paddingHorizontal: 15, 
     borderRadius: 10,
-    width: '15%',
-    // justifyContent: 'center',
+    width: '18%',
   },
   btnText: {
-    color: '#FFF',
+    color: '#000',
+    fontWeight: 'bold',
     fontSize: 14
+  },
+  btnIcon: {
+    marginRight: 3,
   },
   title: { fontSize: 22, fontWeight: 'bold', color: '#333' },
   listPadding: { padding: 15, paddingBottom: 30 },

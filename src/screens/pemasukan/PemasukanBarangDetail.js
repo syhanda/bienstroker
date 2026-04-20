@@ -76,7 +76,7 @@ export default function DetailStokMasukScreen({ route }) {
                     <View style={styles.tableContainer}>
                         {/* Header Tabel (Data Statis) */}
                         <TableRow 
-                            item={{ nama: 'Nama Barang', jumlah: 'Jumlah', satuan: 'Satuan' }} 
+                            item={{ bahan_nama: 'Nama Barang', jumlah: 'Jumlah', satuan: 'Satuan' }} 
                             isHeader={true} 
                         />
 
@@ -99,7 +99,7 @@ export default function DetailStokMasukScreen({ route }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'white',
+        backgroundColor: '#F3F6FA',
     },
     scrollContent: {
         paddingBottom: 40,
@@ -114,13 +114,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: 'white',
+        backgroundColor: '#E0F2F1',
         marginHorizontal: 20,
         paddingVertical: 18,
         paddingHorizontal: 20,
         borderRadius: 20,
         borderWidth: 1,
-        borderColor: '#000',
+        borderColor: '#00695C',
         elevation: 4, // Shadow Android
         shadowColor: '#000', // Shadow iOS
         shadowOffset: { width: 0, height: 4 },
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
         borderColor: '#E0E0E0', 
     },
     tableHeaderBg: {
-        backgroundColor: '#1A1A1A', // Background Header Hitam Pekat
+        backgroundColor: '#0e3b55', // Background Header Hitam Pekat
         borderBottomWidth: 1,
         borderColor: '#000', // Garis pemisah header-isi lebih tegas
     },
@@ -179,15 +179,14 @@ const styles = StyleSheet.create({
     
     // --- Text Style ---
     cellText: {
-        fontSize: isTablet ? 15 : 13,
+        fontSize: isTablet ? 16 : 13,
         color: 'black',
-        textAlign: 'left',
     },
     headerText: {
         color: 'white', // Text header putih
         fontWeight: 'bold',
         textAlign: 'center', // Header dibuat tengah
-        fontSize: isTablet ? 16 : 14,
+        fontSize: isTablet ? 15 : 14,
     },
 
     // --- Kolom Width (Persentase agar Responsif) ---
@@ -195,102 +194,11 @@ const styles = StyleSheet.create({
         flex: 3, // Paling lebar
     },
     colJumlah: {
-        flex: 1.2,
+        flex: .8,
         alignItems: 'center', // Isinya di tengah
     },
     colSatuan: {
-        flex: 1.2,
+        flex: .8,
         alignItems: 'center',
     },
-    colDeskripsi: {
-        flex: 2.5, // Lebar untuk deskripsi
-    },
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import { useEffect, useState } from 'react';
-// import { View, Text, FlatList, StyleSheet } from 'react-native';
-// import { getPemasukanDetail } from '../../database/pemasukan';
-
-// export default function PemasukanBarangDetail({ route }) {
-//   const { id } = route.params ?? {}; 
-//   const [listPemasukan, setListPemasukan] = useState([]);
-
-  // useEffect(() => {
-  //   let isActive = true;
-
-  //   async function loadData() {
-  //       const result = await getPemasukanDetail(id);
-        
-  //       if (isActive) setListPemasukan(result ?? []);
-  //   }
-
-  //   loadData();
-  //   return () => {
-  //       isActive = false;
-  //   }
-  // }, []);
-
-//   const renderItem = ({ item }) => (
-//     <View style={styles.card}>
-//       <View style={styles.info}>
-//         <Text style={styles.namaBahan}>{item.bahan_nama}</Text>
-//       </View>
-//       <View style={styles.jumlahContainer}>
-//         <Text style={styles.jumlahText}>+{item.jumlah} pcs</Text>
-//       </View>
-//     </View>
-//   );
-
-//   return (
-//     <View style={styles.container}>
-//       <View style={styles.header}>
-//         <Text style={styles.label}>Pemasukan Tanggal:</Text>
-//     <Text style={styles.tanggalValue}>{listPemasukan.tanggal}</Text>
-//       </View>
-
-//       <FlatList
-//         data={listPemasukan.items}
-//         keyExtractor={(item, index) => index.toString()}
-//         renderItem={renderItem}
-//         ListEmptyComponent={
-//           <Text style={styles.empty}>Tidak ada pemasukan barang pada tanggal ini.</Text>
-//         }
-//       />
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: { flex: 1, backgroundColor: '#f8f9fa', padding: 16 },
-//   header: { marginBottom: 20, padding: 15, backgroundColor: '#fff', borderRadius: 10, elevation: 2 },
-//   label: { fontSize: 14, color: '#666' },
-//   tanggalValue: { fontSize: 18, fontWeight: 'bold', color: '#333' },
-//   card: {
-//     flexDirection: 'row',
-//     backgroundColor: '#fff',
-//     padding: 15,
-//     borderRadius: 10,
-//     marginBottom: 10,
-//     alignItems: 'center',
-//     justifyContent: 'space-between',
-//     elevation: 1
-//   },
-//   namaBahan: { fontSize: 16, fontWeight: '600' },
-//   keterangan: { fontSize: 12, color: '#888', marginTop: 4 },
-//   jumlahContainer: { backgroundColor: '#eeffeb', padding: 8, borderRadius: 5 },
-//   jumlahText: { color: '#4CAF50', fontWeight: 'bold' },
-//   empty: { textAlign: 'center', marginTop: 50, color: '#999' }
-// });

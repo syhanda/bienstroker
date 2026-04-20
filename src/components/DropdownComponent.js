@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import { Ionicons } from '@expo/vector-icons';
 
 const DropdownComponent = ({ 
-  data,          // Data yang akan ditampilkan
-  value,         // State nilai yang dipilih
-  onChange,      // Fungsi untuk mengupdate state
-  placeholder,   // Teks saat kosong
-  label = "label", // Nama field untuk teks (default: 'label')
-  val = "value",   // Nama field untuk id (default: 'value')
-  isTablet = true // Penyesuaian style tablet jika perlu
+  data,
+  value, 
+  onChange,
+  placeholder,
+  label = "label",
+  val = "value",
+  isTablet = true
 }) => {
   const [isFocus, setIsFocus] = useState(false);
 
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
   },
   dropdownTablet: {
-    height: 55, // Sedikit lebih besar di tablet
+    height: 55,
   },
   placeholderStyle: {
     fontSize: 16,

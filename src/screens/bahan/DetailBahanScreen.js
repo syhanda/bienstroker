@@ -1,130 +1,17 @@
-// import React, { useEffect, useState } from 'react';
-// import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
-// import { getBahan } from "../../database/bahan";
-// import { Ionicons } from '@expo/vector-icons';
-
-// const DetailBahanScreen = ({ route }) => {
-//   const { itemId } = route.params ?? {};
-//   const [item, setItem] = useState(null);
-
-//   useEffect(() => {
-//     loadData();
-//   }, [itemId]);
-
-//   const loadData = async () => {
-//     try {
-//       const result = await getBahan(itemId);
-//       setItem(result);
-//     } catch (error) {
-//       console.error("Gagal memuat detail bahan:", error);
-//     }
-//   };
-
-//   if (!item) return <View style={styles.loading}><Text>Memuat...</Text></View>;
-
-//   // Logika peringatan stok tipis
-//   const isStokKritis = item.stok <= item.stok_minimum;
-//   console.log(item.gambar);
-
-//   return (
-//     <ScrollView style={styles.container}>
-//       {/* Bagian Gambar */}
-//       <View style={styles.imageContainer}>
-//         {item.foto_uri ? (
-//           <Image source={{ uri: item.gambar }} style={styles.image} resizeMode="cover" />
-//         ) : (
-//           <View style={styles.imagePlaceholder}>
-//             <Ionicons name="cube-outline" size={80} color="#ccc" />
-//             <Text style={{ color: '#999' }}>Tidak ada gambar</Text>
-//           </View>
-//         )}
-//       </View>
-
-//       {/* Konten Detail */}
-//       <View style={styles.content}>
-//         <Text style={styles.nama}>{item.nama}</Text>
-        
-//         {/* Badge Status Stok */}
-//         <View style={[styles.badge, { backgroundColor: isStokKritis ? '#ffebee' : '#e8f5e9' }]}>
-//           <Text style={[styles.badgeText, { color: isStokKritis ? '#d32f2f' : '#2e7d32' }]}>
-//             {isStokKritis ? 'Stok Perlu Ditambah' : 'Stok Aman'}
-//           </Text>
-//         </View>
-
-//         <View style={styles.section}>
-//           <Text style={styles.label}>Deskripsi</Text>
-//           <Text style={styles.deskripsi}>{item.deskripsi || 'Tidak ada deskripsi bahan.'}</Text>
-//         </View>
-
-//         <View style={styles.row}>
-//           <View style={styles.box}>
-//             <Text style={styles.label}>Sisa Stok</Text>
-//             <Text style={[styles.value, { color: isStokKritis ? '#d32f2f' : '#333' }]}>
-//               {item.stok}
-//             </Text>
-//           </View>
-//           <View style={styles.box}>
-//             <Text style={styles.label}>Minimum Stok</Text>
-//             <Text style={styles.value}>{item.min_stok}</Text>
-//           </View>
-//         </View>
-
-//         {/* Tombol Aksi */}
-//         <TouchableOpacity 
-//           style={styles.btnEdit}
-//           onPress={() => navigation.navigate('EditBahan', { item })}
-//         >
-//           <Ionicons name="create-outline" size={20} color="#fff" />
-//           <Text style={styles.btnText}>Edit Data Bahan</Text>
-//         </TouchableOpacity>
-//       </View>
-//     </ScrollView>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: { flex: 1, backgroundColor: '#fff' },
-//   loading: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-//   imageContainer: { width: '100%', height: 300, backgroundColor: '#f0f0f0' },
-//   image: { width: '100%', height: '100%' },
-//   imagePlaceholder: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-//   content: { padding: 20, borderTopLeftRadius: 25, borderTopRightRadius: 25, marginTop: -20, backgroundColor: '#fff' },
-//   nama: { fontSize: 24, fontWeight: 'bold', color: '#333', marginBottom: 10 },
-//   badge: { alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, marginBottom: 20 },
-//   badgeText: { fontSize: 12, fontWeight: 'bold' },
-//   section: { marginBottom: 20 },
-//   label: { fontSize: 14, color: '#888', marginBottom: 5 },
-//   deskripsi: { fontSize: 16, color: '#555', lineHeight: 24 },
-//   row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 30 },
-//   box: { flex: 1, padding: 15, backgroundColor: '#f8f9fa', borderRadius: 12, marginRight: 10, alignItems: 'center' },
-//   value: { fontSize: 22, fontWeight: 'bold' },
-//   btnEdit: { 
-//     flexDirection: 'row', 
-//     backgroundColor: '#007bff', 
-//     padding: 15, 
-//     borderRadius: 12, 
-//     justifyContent: 'center', 
-//     alignItems: 'center' 
-//   },
-//   btnText: { color: '#fff', fontWeight: 'bold', marginLeft: 10 }
-// });
-
-// export default DetailBahanScreen;
-
-import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { Image } from 'expo-image';
+import React, { useState, useCallback, useContext } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { getBahan } from '../../database/bahan';
 import * as FileSystem from 'expo-file-system/legacy';
-import * as ImagePicker from 'expo-image-picker'
+import { AuthContext } from '../../AuthContext';
 
-export default function BahanDetailScreen({ route }) {
-    const { itemId } = route.params;
+export default function DetailBahanScreen({ route, navigation }) {
+    const { itemId } = route.params || null;
     const [bahan, setBahan] = useState(null);
-    const navigation = useNavigation();
+    const { user } = useContext(AuthContext);
 
-    // Mengambil data setiap kali halaman difokuskan (agar update setelah edit)
     useFocusEffect(
         useCallback(() => {
             async function loadData() {
@@ -151,119 +38,167 @@ export default function BahanDetailScreen({ route }) {
     }
 
     return (
-        <ScrollView style={styles.container}>
-            {/* Header Gambar */}
-            <View style={styles.imageContainer}>
-                {bahan.gambar ? (
+        <SafeAreaView style={styles.container}>
+            <ScrollView contentContainerStyle={styles.scrollContent}>
+                {/* --- GAMBAR BAHAN --- */}
+                <View style={styles.imageWrapper}>
                     <Image 
-                      source={bahan.gambar} // Tidak perlu {{ uri: ... }} cukup string path saja
-                      style={styles.image}
-                      contentFit="cover" // Pengganti resizeMode
-                      transition={200}   // Efek halus saat gambar muncul
-                      cachePolicy="none" // Memastikan dia baca file terbaru dari storage
-                  />
-                ) : (
-                    <View style={styles.noImage}>
-                        <Text style={styles.noImageText}>Tidak ada foto</Text>
+                        source={{ uri: bahan.gambar }} 
+                        style={styles.imageBahan} 
+                        resizeMode="cover"
+                    />
+                </View>
+
+                {/* --- KARTU INFORMASI --- */}
+                <View style={styles.infoCard}>
+                    <View style={styles.row}>
+                        <View>
+                            <Text style={styles.label}>Nama Bahan</Text>
+                            <Text style={styles.valueName}>{bahan.nama}</Text>
+                        </View>
+                        {/* Status Alert jika stok di bawah minimum */}
+                        {bahan.stok <= bahan.min_stok && (
+                            <View style={styles.badgeWarning}>
+                                <Text style={styles.warningText}>Restock!</Text>
+                            </View>
+                        )}
                     </View>
-                )}
-            </View>
 
-            {/* Konten Detail */}
-            <View style={styles.infoCard}>
-                <Text style={styles.label}>Nama Bahan</Text>
-                <Text style={styles.value}>{bahan.nama}</Text>
+                    <View style={styles.divider} />
 
-                <View style={styles.divider} />
-
-                <Text style={styles.label}>Deskripsi</Text>
-                <Text style={styles.deskripsi}>
-                    {bahan.deskripsi || 'Tidak ada deskripsi.'}
-                </Text>
-
-                <View style={styles.divider} />
-
-                <View style={styles.row}>
-                    <View>
-                        <Text style={styles.label}>Minimum Stok</Text>
-                        <Text style={[styles.value, { color: '#e67e22' }]}>
-                            {bahan.min_stok} Unit
-                        </Text>
+                    <View style={styles.row}>
+                        <View>
+                            <Text style={styles.label}>Stok Saat Ini</Text>
+                            <Text style={[styles.value, { color: bahan.stok <= bahan.min_stok ? 'red' : 'green' }]}>
+                                {bahan.stok} {bahan.satuan}
+                            </Text>
+                        </View>
+                        <View>
+                            <Text style={[styles.label, { textAlign: 'right' }]}>Minimum Stok</Text>
+                            <Text style={[styles.value, { textAlign: 'right' }]}>{bahan.min_stok} {bahan.satuan}</Text>
+                        </View>
                     </View>
                 </View>
-            </View>
 
-            {/* Tombol Aksi */}
-            <TouchableOpacity 
-                style={styles.btnEdit}
-                onPress={() => navigation.navigate('BahanForm', { itemId: bahan.id })}
-            >
-                <Text style={styles.btnEditText}>Edit Bahan</Text>
-            </TouchableOpacity>
-        </ScrollView>
+                {(user.level == 'admin') ? (
+                    <TouchableOpacity 
+                        style={styles.btnEdit}
+                        onPress={() => navigation.navigate('bahanForm', { itemId: bahan.id })}
+                        activeOpacity={0.8}
+                    >
+                        <MaterialCommunityIcons name="pencil" size={20} color="white" />
+                        <Text style={styles.btnEditText}>Edit Data Bahan</Text>
+                    </TouchableOpacity>
+                ) : (
+                    <View></View>
+                )}
+
+            </ScrollView>
+        </SafeAreaView>
     );
 }
 
+
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#f8f9fa' },
-    center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    imageContainer: {
+    container: {
+        flex: 1,
+        backgroundColor: '#F8F9FA',
+    },
+    scrollContent: {
+        paddingBottom: 40,
+        alignSelf: 'center',
         width: '100%',
-        height: 300, // Beri tinggi tetap (fixed height)
-        backgroundColor: '#E1E4E8',
-        overflow: 'hidden',
+        maxWidth: 600, // Menjaga konten tidak terlalu lebar di tablet
     },
-    image: { width: '100%', height: '100%' },
-    noImage: { 
-        flex: 1, 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        backgroundColor: '#ececec' 
-    },
-    noImageText: { color: '#999' },
-    infoCard: {
-        backgroundColor: '#fff',
-        margin: 15,
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         padding: 20,
-        borderRadius: 15,
-        elevation: 3,
+    },
+    headerTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    imageWrapper: {
+        marginHorizontal: 20,
+        borderRadius: 20,
+        backgroundColor: 'white',
+        // Shadow agar gambar terlihat "mengambang"
+        elevation: 8,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.15,
+        shadowRadius: 10,
+    },
+    imageBahan: {
+        width: '100%',
+        height: 300,
+        borderRadius: 20,
+    },
+    infoCard: {
+        backgroundColor: 'white',
+        margin: 20,
+        padding: 25,
+        borderRadius: 25,
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 5 },
         shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowRadius: 8,
+    },
+    row: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
     label: {
         fontSize: 12,
-        color: '#7f8c8d',
+        color: '#888',
         textTransform: 'uppercase',
         letterSpacing: 1,
-        marginBottom: 5,
+    },
+    valueName: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        color: '#333',
+        marginTop: 5,
     },
     value: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#2c3e50',
-        marginBottom: 15,
-    },
-    description: {
-        fontSize: 16,
-        color: '#34495e',
-        lineHeight: 24,
-        marginBottom: 15,
+        fontSize: 18,
+        fontWeight: '700',
+        marginTop: 5,
     },
     divider: {
         height: 1,
-        backgroundColor: '#f1f1f1',
-        marginBottom: 15,
+        backgroundColor: '#F0F0F0',
+        marginVertical: 20,
     },
-    row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-    btnEdit: {
-        backgroundColor: '#3498db',
-        marginHorizontal: 15,
-        marginBottom: 30,
-        padding: 15,
+    badgeWarning: {
+        backgroundColor: '#FFEBEE',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
         borderRadius: 10,
-        alignItems: 'center',
     },
-    btnEditText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+    warningText: {
+        color: '#D32F2F',
+        fontSize: 12,
+        fontWeight: 'bold',
+    },
+    btnEdit: {
+        backgroundColor: 'black',
+        flexDirection: 'row',
+        marginHorizontal: 20,
+        height: 60,
+        borderRadius: 15,
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 10,
+        elevation: 5,
+    },
+    btnEditText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
 });

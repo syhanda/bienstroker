@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useContext, useCallback } from 'react';
 import { 
   View, 
   Text, 
@@ -8,12 +8,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getAllPemakaian } from '../../database/pemakaian';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { AuthContext } from '../../AuthContext';
 
-export default function PemakaianBarangScreen() {
+export default function PemakaianBarangScreen({ navigation }) {
   const [riwayatPemakaian, setRiwayatPemakaian] = useState([]);
-  const navigation = useNavigation();
+  const { user } = useContext(AuthContext);
 
     useFocusEffect(
         useCallback(() => {
@@ -60,9 +61,14 @@ export default function PemakaianBarangScreen() {
   return (
     <SafeAreaView edges={['left', 'right']} style={styles.container}>
         <View style={styles.header}>
-            <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate('pemakaianForm')}>
-                <Text style={styles.btnText}>Tambah Pemakaian</Text>
-            </TouchableOpacity>
+            {(user.level == 'admin') ? (
+              <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate('pemakaianForm')}>
+                  <Ionicons style={styles.btnIcon} name="add" size={21} color="#00695C" />
+                  <Text style={styles.btnText}>Tambah Pemakaian</Text>
+              </TouchableOpacity>
+            ) : (
+              <View></View>
+            )}
         </View>
 
         <FlatList
@@ -86,18 +92,23 @@ export default function PemakaianBarangScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F5F7FA' },
-  header: { padding: 20, backgroundColor: '#FFF', borderBottomWidth: 1, borderBottomColor: '#EEE' },
+  header: { paddingHorizontal: 20,
+    paddingTop: 15,
+    backgroundColor: '#F3F6FA',
+  },
   actionBtn: {
-    backgroundColor: '#000', //'#2196F3',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E3F2FD',
     alignItems: 'center', 
     paddingVertical: 10, 
     paddingHorizontal: 15, 
     borderRadius: 10,
-    width: '15%',
-    justifyContent: 'center',
+    width: '16.5%',
   },
   btnText: {
-    color: '#FFF',
+    color: '#000',
+    fontWeight: 'bold',
     fontSize: 14
   },
   title: { fontSize: 22, fontWeight: 'bold', color: '#333' },
@@ -129,147 +140,3 @@ const styles = StyleSheet.create({
   emptyEmoji: { fontSize: 50, marginBottom: 10 },
   emptyText: { color: '#999', fontSize: 16 }
 });
-
-
-
-
-// import React, { useState, useEffect, useCallback } from 'react';
-// import { 
-//   View, 
-//   Text, 
-//   StyleSheet, 
-//   FlatList,
-//   TouchableOpacity,
-// } from 'react-native';
-// import { SafeAreaView } from 'react-native-safe-area-context';
-// import { getAllPemakaian } from '../../database/pemakaian';
-// import { useFocusEffect, useNavigation } from '@react-navigation/native';
-
-// export default function PemakaianBarangScreen() {
-//   const [riwayatPemakaian, setRiwayatPemakaian] = useState([]);
-//   const navigation = useNavigation();
-
-// 	useFocusEffect(
-// 		useCallback(() => {
-// 			let isActive = true;
-// 			let riwayat = [];
-
-// 			async function loadData() {
-// 				const result = await getAllPemakaian() ?? [];
-
-// 				result.forEach(item => {
-// 					const pemakaian = {
-// 						id: item.id,
-// 						tanggal: item.tanggal,
-// 						total: item.total
-// 					};
-
-// 					riwayat.push(pemakaian);
-// 				});
-
-// 				if (isActive) setRiwayatPemakaian(riwayat);
-// 			}
-
-// 			loadData();
-
-// 			return () => {
-// 				isActive = false;
-// 			};
-// 		}, [])
-// 	);
-
-//   const renderItem = ({ item }) => (
-//     <TouchableOpacity onPress={() => navigation.navigate('pemakaianDetail', { id: item.id })}>
-//       <View style={styles.card}>
-//         <View style={styles.iconCircle}>
-//           <Text style={{fontSize: 18}}>📉</Text>
-//         </View>
-//         <View style={styles.content}>
-//           <Text style={styles.tglText}>{item.tanggal}</Text>
-//         </View>
-//         <View style={styles.jumlahContainer}>
-//           <Text style={styles.jumlahText}>-{item.total}</Text>
-//         </View>
-//       </View>
-//     </TouchableOpacity>
-//   );
-
-//   return (
-// 	<SafeAreaView edges={['left', 'right']} style={styles.container}>
-// 		<View style={styles.header}>
-// 			<TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate('pemakaianForm')}>
-// 				<Text style={styles.btnText}>Tambah pemakaian</Text>
-// 			</TouchableOpacity>
-// 		</View>
-
-// 		<FlatList
-// 			data={riwayatPemakaian}
-// 			keyExtractor={(item, index) => index.toString()}
-// 			renderItem={renderItem}
-// 			contentContainerStyle={styles.listPadding}
-//       removeClippedSubviews={true}
-//       maxToRenderPerBatch={10}
-//       windowSize={5}
-// 			ListEmptyComponent={
-// 				<View style={styles.emptyState}>
-// 					<Text style={styles.emptyEmoji}>📔</Text>
-// 					<Text style={styles.emptyText}>Belum ada catatan pemakaian.</Text>
-// 				</View>
-// 			}
-// 		/>
-//     </SafeAreaView>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: { flex: 1, backgroundColor: '#F5F7FA' },
-//   header: { padding: 20, backgroundColor: '#FFF', borderBottomWidth: 1, borderBottomColor: '#EEE' },
-//   actionBtn: {
-// 	backgroundColor: '#2196F3',
-//     alignItems: 'center', 
-//     paddingVertical: 10, 
-//     paddingHorizontal: 15, 
-//     borderRadius: 10,
-//     width: '48%',
-//     justifyContent: 'center',
-// 	marginTop: 14
-//   },
-//   btnText: {
-// 	color: '#FFF',
-// 	fontSize: 14
-//   },
-//   title: { fontSize: 22, fontWeight: 'bold', color: '#333' },
-//   subtitle: { fontSize: 14, color: '#777', marginTop: 4 },
-//   listPadding: { padding: 15, paddingBottom: 30 },
-//   card: {
-//     backgroundColor: '#FFF',
-//     borderRadius: 12,
-//     padding: 15,
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     marginBottom: 10,
-//     elevation: 2,
-//     shadowColor: '#000',
-//     shadowOffset: { width: 0, height: 1 },
-//     shadowOpacity: 0.1,
-//     shadowRadius: 3,
-//   },
-//   iconCircle: {
-//     width: 45,
-//     height: 45,
-//     borderRadius: 22.5,
-//     backgroundColor: '#FFF3E0',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     marginRight: 15,
-//   },
-//   content: { flex: 1 },
-//   namaBahan: { fontSize: 16, fontWeight: 'bold', color: '#333' },
-//   tglText: { fontSize: 14, color: '#999', marginTop: 2 },
-//   jumlahContainer: { alignItems: 'flex-end' },
-//   jumlahText: { fontSize: 16, fontWeight: 'bold', color: '#E53935' },
-//   unitText: { fontSize: 10, color: '#999', textTransform: 'uppercase' },
-//   emptyState: { alignItems: 'center', marginTop: 100 },
-//   emptyEmoji: { fontSize: 50, marginBottom: 10 },
-//   emptyText: { color: '#999', fontSize: 16 }
-// });
