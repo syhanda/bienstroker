@@ -36,10 +36,10 @@ export async function getAllPemasukan() {
     const db = await getDb();
     try {
         const result = await db.getAllAsync(
-            `SELECT p.id, p.tanggal, SUM(pi.jumlah) AS total 
+            `SELECT p.tanggal, SUM(pi.jumlah) AS total 
              FROM pemasukan_item pi 
              JOIN pemasukan p ON pi.pemasukan_id = p.id 
-             GROUP BY p.id, p.tanggal 
+             GROUP BY p.tanggal 
              ORDER BY p.tanggal DESC`
         );
         return result ?? [];
@@ -49,15 +49,46 @@ export async function getAllPemasukan() {
     }
 }
 
+export async function getPemasukanByDate(tanggal) {
+    const db = await getDb();
+
+    try {
+        const result = await db.getAllAsync(
+            `SELECT b.nama, b.satuan, SUM(pi.jumlah) AS jumlah 
+             FROM pemasukan_item pi 
+             INNER JOIN pemasukan p ON pi.pemasukan_id = p.id 
+             INNER JOIN bahan b ON pi.bahan_id = b.id 
+             WHERE p.tanggal = ?
+             GROUP BY b.id, b.nama, b.satuan`, 
+            tanggal
+        );
+
+        if (!result || result.length === 0) return null;
+
+        return {
+            tanggal: tanggal,
+            items: result.map(item => ({
+                bahan_nama: item.nama,
+                jumlah: item.jumlah,
+                satuan: item.satuan
+            }))
+        };
+    } catch (e) {
+        console.error('Error get pemasukan by date:', e);
+        return null;
+    }
+}
+
+
 export async function getPemasukanDetail(id) {
     const db = await getDb();
 
     try {
         const result = await db.getAllAsync(
             `SELECT p.tanggal, b.nama, b.satuan, pi.jumlah 
-             FROM pemasukan p 
-             JOIN pemasukan_item pi ON p.id = pi.pemasukan_id 
-             JOIN bahan b ON pi.bahan_id = b.id 
+             FROM pemasukan_item pi 
+             INNER JOIN pemasukan p ON pi.pemasukan_id = p.id 
+             INNER JOIN bahan b ON pi.bahan_id = b.id 
              WHERE p.id = ?`, 
             id
         );

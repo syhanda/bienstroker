@@ -34,7 +34,7 @@ export async function insertBahan(nama, satuan, minStok, gambar) {
 export async function getBarangHabis() {
     const db = await getDb();
     try {
-        return await db.getAllAsync('SELECT nama FROM bahan WHERE stok <= min_stok');
+        return await db.getAllAsync('SELECT id, nama, stok, satuan FROM bahan WHERE stok <= min_stok');
     } catch (error) {
         console.error('Error fetching barang:', error);
         return null;

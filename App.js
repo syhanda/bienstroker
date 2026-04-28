@@ -16,7 +16,6 @@ import { registerForPushNotificationsAsync, sendLowStockNotification } from './s
 import PemasukanBarangScreen from './src/screens/pemasukan/PemasukanBarangScreen';
 import PemasukanBarangForm from './src/screens/pemasukan/PemasukanBarangForm';
 import LoginScreen from './src/screens/LoginScreen';
-import ProfileScreen from './src/screens/pengguna/ProfileScreen';
 import StokBarangHabisScreen from './src/screens/StokBarangHabisScreen';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { seed } from './src/database/pengguna';
@@ -28,6 +27,8 @@ import * as TaskManager from 'expo-task-manager';
 import * as BackgroundTask from 'expo-background-task';
 import * as Notifications from 'expo-notifications';
 import { getBarangHabis } from './src/database/bahan';
+import { navigationRef } from './src/NavigationRef';
+import NotificationHandler from './src/NotificationHandler';
 
 const Stack = createNativeStackNavigator();
 
@@ -38,9 +39,9 @@ function RootStack() {
     // 1. Tampilkan Loading saat aplikasi sedang mengecek Async Storage
     if (isLoading) {
         return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <ActivityIndicator size="large" color="#2196F3" />
-        </View>
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" color="#2196F3" />
+            </View>
         );
     }
 
@@ -48,8 +49,8 @@ function RootStack() {
         <Stack.Navigator>
             {user == null ? (
                 <Stack.Group>
-                    <Stack.Screen name='login' component={LoginScreen} options={{ title: "" }} />
-                </Stack.Group>    
+                    <Stack.Screen name='login' component={LoginScreen} options={{ headerShown: false }} />
+                </Stack.Group>
             ) : (
                 <Stack.Group>
                     <Stack.Screen
@@ -99,7 +100,7 @@ export default function App() {
         async function requestPermission() {
             // 1. Minta Izin Kamera
             const statusKamera = await ImagePicker.requestCameraPermissionsAsync();
-            
+
             // 2. Minta Izin Galeri (Media Library)
             // const statusGaleri = await MediaLibrary.getPermissionsAsync();
 
@@ -129,8 +130,9 @@ export default function App() {
 
     return (
         <AuthProvider>
-            <NavigationContainer>
-                <RootStack />
+            <NavigationContainer ref={navigationRef}>
+                <NotificationHandler/>
+                    <RootStack />
             </NavigationContainer>
         </AuthProvider>
     );

@@ -1,57 +1,66 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    View, 
-    Text, 
-    StyleSheet, 
-    ScrollView,  
+import {
+    View,
+    Text,
+    StyleSheet,
+    ScrollView,
     Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { getPemakaianDetail } from '../../database/pemakaian';
+import { getPemakaianDetail, getPemakaianByDate } from '../../database/pemakaian';
 
 // Deteksi Layar Tablet
 const { width } = Dimensions.get('window');
 const isTablet = width > 600;
 
+const COLORS = {
+    primary: '#10B981',      // Emerald Green
+    primaryLight: '#F0FDFA', // Background Mint
+    textDark: '#064E3B',     // Hijau Gelap
+    white: '#FFFFFF',
+    border: '#E2E8F0',
+    slate: '#64748B',
+    headerTable: '#064E3B'   // Hijau sangat gelap untuk header
+};
+
 export default function PemakaianBarangDetail({ route }) {
-    const { id } = route.params ?? {};
-    const [pemakaianHarianData, setPemakaianHarianData] = useState([]);
+    const { id, tanggal } = route.params ?? {};
+    const [pemakaianHarianData, setPemakaianHarianData] = useState({ items: [] });
 
     useEffect(() => {
-      let isActive = true;
+        let isActive = true;
 
-      async function loadData() {
-          const result = await getPemakaianDetail(id);
-          
-          if (isActive) setPemakaianHarianData(result ?? []);
-      }
+        async function loadData() {
+            let result;
+            if (tanggal) {
+                result = await getPemakaianByDate(tanggal);
+            } else {
+                result = await getPemakaianDetail(id);
+            }
 
-      loadData();
-      return () => {
-          isActive = false;
-      }
+            if (isActive) setPemakaianHarianData(result ?? { items: [] });
+        }
+
+        loadData();
+        return () => {
+            isActive = false;
+        }
     }, []);
 
-    // Komponen untuk Baris Tabel (Row) agar kode bersih
-    const TableRow = ({ item, isHeader = false }) => (
+    const TableRow = ({ item, isHeader }) => (
         <View style={[styles.tableRow, isHeader && styles.tableHeaderBg]}>
-            {/* Kolom Nama Barang */}
-            <View style={[styles.cell, styles.colNama, !isHeader && styles.borderRightCell]}>
-                <Text style={[styles.cellText, isHeader && styles.headerText]} numberOfLines={2}>
+            <View style={[styles.cell, styles.colNama, styles.borderRightCell]}>
+                <Text style={[styles.cellText, isHeader && styles.headerText]}>
                     {item.bahan_nama}
                 </Text>
             </View>
-            
-            {/* Kolom Jumlah */}
-            <View style={[styles.cell, styles.colJumlah, !isHeader && styles.borderRightCell]}>
+            <View style={[styles.cell, styles.colJumlah, styles.borderRightCell]}>
                 <Text style={[styles.cellText, isHeader && styles.headerText]}>
                     {item.jumlah}
                 </Text>
             </View>
-
-            {/* Kolom Satuan */}
-            <View style={[styles.cell, styles.colSatuan, !isHeader && styles.borderRightCell]}>
+            <View style={[styles.cell, styles.colSatuan]}>
                 <Text style={[styles.cellText, isHeader && styles.headerText]}>
                     {item.satuan}
                 </Text>
@@ -62,144 +71,160 @@ export default function PemakaianBarangDetail({ route }) {
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContent}>
-                {/* --- 1. HEADER CARD (Responsif) --- */}
+
+                {/* --- 1. HEADER CARD --- */}
                 <View style={styles.headerCard}>
                     <View style={styles.headerLeft}>
-                        <MaterialCommunityIcons name="archive-arrow-up-outline" size={30} color="black" />
-                        <Text style={styles.headerTitle}>Stok Dipakai</Text>
+                        <View style={styles.iconBox}>
+                            <MaterialCommunityIcons name="clipboard-text-clock-outline" size={isTablet ? 32 : 26} color={COLORS.primary} />
+                        </View>
+                        <View>
+                            <Text style={styles.headerTitle}>Detail Pemakaian</Text>
+                        </View>
                     </View>
-                    <Text style={styles.headerDate}>{pemakaianHarianData.tanggal}</Text>
+                    <View style={styles.dateBadge}>
+                        <MaterialCommunityIcons name="calendar" size={16} color={COLORS.primary} />
+                        <Text style={styles.headerDate}>{pemakaianHarianData.tanggal}</Text>
+                    </View>
                 </View>
 
-                {/* --- 2. TABEL DATA (Responsif & Bergaris) --- */}
+                {/* --- 2. TABEL DATA --- */}
                 <View style={styles.tableWrapper}>
                     <View style={styles.tableContainer}>
-                        {/* Header Tabel (Data Statis) */}
-                        <TableRow 
-                            item={{ bahan_nama: 'Nama Barang', jumlah: 'Jumlah', satuan: 'Satuan'}} 
-                            isHeader={true} 
+                        {/* Header Tabel */}
+                        <TableRow
+                            item={{ bahan_nama: 'NAMA BARANG', jumlah: 'JUMLAH', satuan: 'SATUAN' }}
+                            isHeader={true}
                         />
 
-                        {/* Isi Tabel (Looping Data) */}
+                        {/* Isi Tabel */}
                         {pemakaianHarianData.items?.map((item, index) => (
-                            <TableRow 
-                                key={index} 
-                                item={item} 
+                            <TableRow
+                                key={index}
+                                item={item}
                                 isHeader={false}
                             />
                         ))}
                     </View>
                 </View>
+
             </ScrollView>
         </SafeAreaView>
     );
 }
 
-// --- STYLING (CSS) ---
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F3F6FA',
+        backgroundColor: COLORS.primaryLight,
     },
     scrollContent: {
-        paddingBottom: 40,
-        // Responsif Tablet: Jaga konten di tengah
+        paddingVertical: isTablet ? 40 : 20,
         alignSelf: 'center',
         width: '100%',
-        maxWidth: 800, // Batas maksimal lebar konten di tablet
+        maxWidth: isTablet ? 900 : '100%',
     },
-    
+
     // --- Header Card Style ---
     headerCard: {
-        flexDirection: 'row',
+        flexDirection: isTablet ? 'row' : 'column',
         justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: '#E0F2F1',
+        alignItems: isTablet ? 'center' : 'flex-start',
+        backgroundColor: COLORS.white,
         marginHorizontal: 20,
-        paddingVertical: 18,
-        paddingHorizontal: 20,
-        borderRadius: 20,
+        padding: 25,
+        borderRadius: 25,
         borderWidth: 1,
-        borderColor: '#00695C',
-        elevation: 4, // Shadow Android
-        shadowColor: '#000', // Shadow iOS
-        shadowOffset: { width: 0, height: 4 },
+        borderColor: COLORS.border,
+        elevation: 10,
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.1,
-        shadowRadius: 5,
+        shadowRadius: 15,
         marginBottom: 30,
+        gap: isTablet ? 0 : 15,
     },
     headerLeft: {
         flexDirection: 'row',
         alignItems: 'center',
     },
-    headerTitle: {
-        fontSize: isTablet ? 22 : 20,
-        fontWeight: 'bold',
-        marginLeft: 15,
-        color: 'black',
+    iconBox: {
+        width: isTablet ? 60 : 50,
+        height: isTablet ? 60 : 50,
+        backgroundColor: COLORS.primaryLight,
+        borderRadius: 15,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 15,
     },
-    headerDate: {
-        fontSize: isTablet ? 18 : 16,
-        color: '#333',
+    headerTitle: {
+        fontSize: isTablet ? 24 : 20,
+        fontWeight: '900',
+        color: COLORS.textDark,
+    },
+    headerSubtitle: {
+        fontSize: 14,
+        color: COLORS.slate,
         fontWeight: '500',
     },
+    dateBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: COLORS.primaryLight,
+        paddingVertical: 8,
+        paddingHorizontal: 15,
+        borderRadius: 12,
+        gap: 8,
+    },
+    headerDate: {
+        fontSize: isTablet ? 16 : 14,
+        color: COLORS.textDark,
+        fontWeight: 'bold',
+    },
 
-    // --- Table General Style ---
+    // --- Table Style ---
     tableWrapper: {
         paddingHorizontal: 20,
     },
     tableContainer: {
+        borderRadius: 20,
+        overflow: 'hidden', // Agar border-radius memotong row
         borderWidth: 1,
-        borderColor: '#000', // Border Luar Tabel Hitam Tegas
-        backgroundColor: 'white',
+        borderColor: COLORS.border,
+        backgroundColor: COLORS.white,
+        elevation: 3,
     },
-    
-    // --- Table Row Style ---
     tableRow: {
         flexDirection: 'row',
-        borderBottomWidth: 1, // Garis Horizontal antar baris
-        borderColor: '#E0E0E0', 
+        borderBottomWidth: 1,
+        borderColor: COLORS.primaryLight,
     },
     tableHeaderBg: {
-        backgroundColor: '#0e3b55', // Background Header Hitam Pekat
-        borderBottomWidth: 1,
-        borderColor: '#000', // Garis pemisah header-isi lebih tegas
+        backgroundColor: COLORS.headerTable,
+        borderBottomWidth: 0,
     },
-    
-    // --- Cell & Border Style ---
     cell: {
-        paddingVertical: isTablet ? 15 : 12,
-        paddingHorizontal: 8,
+        paddingVertical: isTablet ? 18 : 14,
+        paddingHorizontal: 12,
         justifyContent: 'center',
     },
     borderRightCell: {
-        borderRightWidth: 1, // Garis Vertikal antar kolom
-        borderColor: '#E0E0E0',
+        borderRightWidth: 1,
+        borderColor: COLORS.primaryLight,
     },
-    
-    // --- Text Style ---
     cellText: {
-        fontSize: isTablet ? 16 : 13,
-        color: 'black',
-        textAlign: 'left',
+        fontSize: isTablet ? 16 : 14,
+        color: COLORS.textDark,
     },
     headerText: {
-        color: 'white', // Text header putih
-        fontWeight: 'bold',
-        textAlign: 'center', // Header dibuat tengah
-        fontSize: isTablet ? 15 : 14,
+        color: COLORS.white,
+        fontWeight: '800',
+        fontSize: 12,
+        letterSpacing: 1,
     },
 
-    // --- Kolom Width (Persentase agar Responsif) ---
-    colNama: {
-        flex: 3, // Paling lebar
-    },
-    colJumlah: {
-        flex: .8,
-        alignItems: 'center', // Isinya di tengah
-    },
-    colSatuan: {
-        flex: .8,
-        alignItems: 'center',
-    },
+    // --- Column Widths ---
+    colNama: { flex: 2.5 },
+    colJumlah: { flex: 1, alignItems: 'center' },
+    colSatuan: { flex: 1, alignItems: 'center' },
 });

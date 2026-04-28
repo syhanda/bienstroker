@@ -1,12 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    View, Text, TextInput, TouchableOpacity, 
-    StyleSheet, Modal, Alert, Dimensions 
+import {
+    View, Text, TextInput, TouchableOpacity,
+    StyleSheet, Modal, Alert, Dimensions
 } from 'react-native';
 import DropdownComponent from './DropdownComponent';
+import {
+    MaterialCommunityIcons
+
+} from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 const isTablet = width > 600;
+
+const COLORS = {
+    primary: '#10B981',      // Emerald Green
+    primaryLight: '#F0FDFA', // Mint Background
+    textDark: '#064E3B',     // Hijau Gelap
+    border: '#D1FAE5',       // Abu-abu halus
+    placeholder: '#94A3B8',
+    white: '#FFFFFF',
+};
 
 export default function ModalInputBahan({ data, onSelect, visible, onClose }) {
     const [selectedId, setSelectedId] = useState(null);
@@ -31,7 +44,7 @@ export default function ModalInputBahan({ data, onSelect, visible, onClose }) {
 
     function addToList() {
         if (!selectedId) {
-            Alert.alert("Pilih Bahan", "Silakan pilih bahan terlebih dahulu.");
+            Alert.alert("Pilih Barang", "Silakan pilih barang terlebih dahulu.");
             return;
         }
 
@@ -60,25 +73,31 @@ export default function ModalInputBahan({ data, onSelect, visible, onClose }) {
         >
             <View style={styles.overlay}>
                 <View style={styles.modalContainer}>
-                    <Text style={styles.modalTitle}>Input Data Barang</Text>
+                    {/* Header Modal */}
+                    <View style={styles.modalHeader}>
+                        <MaterialCommunityIcons name="plus-box-outline" size={24} color={COLORS.primary} />
+                        <Text style={styles.modalTitle}>Input Data Barang</Text>
+                    </View>
 
-                    <Text style={styles.modalLabel}>Pilih Bahan</Text>
-                    <DropdownComponent 
+                    {/* Label & Dropdown */}
+                    <Text style={styles.modalLabel}>Pilih Barang</Text>
+                    <DropdownComponent
                         data={data}
                         label="nama"
                         val="id"
-                        placeholder="Cari bahan..."
+                        placeholder="Cari barang..."
                         value={selectedId}
                         onChange={(val) => setSelectedId(val)}
                     />
 
+                    {/* Label & Input Jumlah */}
                     <Text style={styles.modalLabel}>Jumlah</Text>
                     <View style={styles.inputRow}>
                         <TextInput
                             style={styles.modalInput}
                             value={jumlah}
                             placeholder="0"
-                            placeholderTextColor="#999"
+                            placeholderTextColor={COLORS.placeholder}
                             onChangeText={(value) => setJumlah(value.replace(/[^0-9]/g, ''))}
                             keyboardType="numeric"
                         />
@@ -89,10 +108,12 @@ export default function ModalInputBahan({ data, onSelect, visible, onClose }) {
                         ) : null}
                     </View>
 
+                    {/* Button Group */}
                     <View style={styles.buttonRow}>
                         <TouchableOpacity
                             style={[styles.btn, styles.btnBatal]}
                             onPress={handleClose}
+                            activeOpacity={0.7}
                         >
                             <Text style={styles.btnTextBatal}>Batal</Text>
                         </TouchableOpacity>
@@ -100,6 +121,7 @@ export default function ModalInputBahan({ data, onSelect, visible, onClose }) {
                         <TouchableOpacity
                             style={[styles.btn, styles.btnSimpan]}
                             onPress={addToList}
+                            activeOpacity={0.8}
                         >
                             <Text style={styles.btnTextSimpan}>Tambah</Text>
                         </TouchableOpacity>
@@ -113,34 +135,42 @@ export default function ModalInputBahan({ data, onSelect, visible, onClose }) {
 const styles = StyleSheet.create({
     overlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: 'rgba(50, 50, 50, 0.4)',
         justifyContent: 'center',
         alignItems: 'center',
     },
     modalContainer: {
-        width: isTablet ? 500 : '90%',
-        backgroundColor: 'white',
-        borderRadius: 20,
-        padding: 25,
-        elevation: 10,
+        width: isTablet ? 550 : '90%',
+        backgroundColor: COLORS.white,
+        borderRadius: 30,
+        padding: isTablet ? 35 : 25,
+        elevation: 20,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 5 },
-        shadowOpacity: 0.3,
-        shadowRadius: 5,
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.2,
+        shadowRadius: 20,
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 25,
+        gap: 10,
     },
     modalTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 20,
+        fontSize: isTablet ? 24 : 20,
+        fontWeight: '900',
         textAlign: 'center',
-        color: '#333',
+        color: COLORS.textDark,
     },
     modalLabel: {
-        fontSize: 14,
-        fontWeight: '600',
+        fontSize: 13,
+        fontWeight: 'bold',
         marginBottom: 8,
-        color: '#666',
-        marginTop: 10,
+        color: COLORS.slate,
+        marginTop: 15,
+        textTransform: 'uppercase',
+        letterSpacing: 1,
     },
     inputRow: {
         flexDirection: 'row',
@@ -148,57 +178,68 @@ const styles = StyleSheet.create({
     },
     modalInput: {
         flex: 1,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 12,
+        borderWidth: 1.5,
+        borderColor: COLORS.border,
+        borderRadius: 15,
         paddingHorizontal: 15,
-        height: 50,
+        height: isTablet ? 60 : 55,
         fontSize: 18,
-        backgroundColor: '#f9f9f9',
+        fontWeight: 'bold',
+        backgroundColor: '#F9FCFB',
+        color: COLORS.textDark,
     },
     satuanBadge: {
-        marginLeft: 10,
-        paddingHorizontal: 15,
-        height: 50,
-        backgroundColor: '#eee',
-        borderRadius: 12,
+        marginLeft: 12,
+        paddingHorizontal: 18,
+        height: isTablet ? 60 : 55,
+        backgroundColor: COLORS.primaryLight,
+        borderRadius: 15,
         justifyContent: 'center',
         alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#ddd',
+        borderWidth: 1.5,
+        borderColor: COLORS.primary,
     },
     satuanText: {
         fontSize: 16,
-        fontWeight: 'bold',
-        color: '#555',
+        fontWeight: '900',
+        color: COLORS.primary,
     },
     buttonRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginTop: 30,
+        marginTop: 35,
         gap: 15,
     },
     btn: {
         flex: 1,
-        height: 50,
-        borderRadius: 12,
+        height: isTablet ? 60 : 55,
+        borderRadius: 18,
         justifyContent: 'center',
         alignItems: 'center',
+        flexDirection: 'row',
+        gap: 8,
     },
     btnBatal: {
-        backgroundColor: '#BDC3C7',
-        borderWidth: 1,
-        borderColor: '#ddd',
+        backgroundColor: COLORS.white,
+        borderWidth: 1.5,
+        borderColor: COLORS.border,
     },
     btnSimpan: {
-        backgroundColor: '#E0F2F1',
+        backgroundColor: COLORS.primary,
+        elevation: 4,
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 5,
     },
     btnTextBatal: {
-        color: '#3c3c3c',
+        color: COLORS.slate,
         fontWeight: 'bold',
+        fontSize: 15,
     },
     btnTextSimpan: {
-        color: '#1A535C',
+        color: COLORS.white,
         fontWeight: 'bold',
+        fontSize: 15,
     },
 });

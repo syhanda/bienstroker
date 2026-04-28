@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { 
-    View, 
-    Text, 
-    StyleSheet, 
-    TouchableOpacity, 
-    FlatList, 
+import {
+    View,
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    FlatList,
     Dimensions,
     Alert
 } from 'react-native';
@@ -15,6 +15,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 const isTablet = width > 600;
+
+const COLORS = {
+    primary: '#10B981',      // Emerald Green
+    primaryLight: '#F0FDFA', // Mint Background
+    textDark: '#064E3B',     // Hijau Gelap
+    white: '#FFFFFF',
+    danger: '#EF4444',       // Merah untuk stok kritis
+    border: '#E2E8F0',
+    slate: '#64748B',
+    accent: '#D1FAE5'
+};
 
 export default function StokBarangHabisScreen() {
     const [baranghabis, setbarangHabis] = useState([]);
@@ -51,11 +62,11 @@ export default function StokBarangHabisScreen() {
     // Fungsi salin semua (Format Baru)
     const copyAllToClipboard = async () => {
         if (baranghabis.length === 0) return;
-        
+
         const listNama = baranghabis
             .map(item => `- ${item.nama} (pesan ${item.jumlahPesan}${item.satuan})`)
             .join('\n');
-            
+
         await Clipboard.setStringAsync(`Daftar Order Barang:\n${listNama}`);
         Alert.alert("Berhasil", "Daftar order telah disalin.");
     };
@@ -72,34 +83,34 @@ export default function StokBarangHabisScreen() {
             <View style={styles.cardItem}>
                 <View style={styles.cardLeft}>
                     <Text style={styles.itemName}>{item.nama}</Text>
-                    <Text style={styles.itemStock}>Sisa Stok: {item.stok}</Text>
+                    <View style={styles.stockBadge}>
+                        <MaterialCommunityIcons name="alert-circle-outline" size={12} color={COLORS.danger} />
+                        <Text style={styles.itemStock}>Sisa: {item.stok}</Text>
+                    </View>
                 </View>
 
                 {/* --- CONTROLLER INCREMENT DECREMENT --- */}
                 <View style={styles.counterContainer}>
-                    <TouchableOpacity 
-                        style={styles.counterBtn} 
+                    <TouchableOpacity
+                        style={styles.counterBtn}
                         onPress={() => updateJumlahPesan(item.id, -1)}
+                        activeOpacity={0.6}
                     >
-                        <MaterialCommunityIcons name="minus" size={20} color="black" />
+                        <MaterialCommunityIcons name="minus" size={18} color={COLORS.textDark} />
                     </TouchableOpacity>
-                    
-                    <Text style={styles.jumlahText}>{item.jumlahPesan}</Text>
-                    
-                    <TouchableOpacity 
-                        style={styles.counterBtn} 
+
+                    <View style={styles.jumlahWrapper}>
+                        <Text style={styles.jumlahText}>{item.jumlahPesan}</Text>
+                    </View>
+
+                    <TouchableOpacity
+                        style={styles.counterBtn}
                         onPress={() => updateJumlahPesan(item.id, 1)}
+                        activeOpacity={0.6}
                     >
-                        <MaterialCommunityIcons name="plus" size={20} color="black" />
+                        <MaterialCommunityIcons name="plus" size={18} color={COLORS.textDark} />
                     </TouchableOpacity>
                 </View>
-
-                {/* <TouchableOpacity 
-                    style={styles.actionBtn} 
-                    onPress={() => copySingleItem(item)}
-                >
-                    <MaterialCommunityIcons name="content-copy" size={24} color="black" />
-                </TouchableOpacity> */}
             </View>
         </View>
     );
@@ -108,11 +119,14 @@ export default function StokBarangHabisScreen() {
         <SafeAreaView style={styles.container}>
             <View style={styles.contentWrapper}>
                 <View style={styles.headerRow}>
-                    <Text style={styles.headerTitle}>Perlu Order Lagi!</Text>
-                    <TouchableOpacity 
-                        style={styles.copyAllBtn} 
+                    <View>
+                        <Text style={styles.headerTitle}>Perlu Order Lagi!</Text>
+                        <Text style={styles.headerSubtitle}>Stok di bawah batas minimum</Text>
+                    </View>
+                    <TouchableOpacity
+                        style={styles.copyAllBtn}
                         onPress={copyAllToClipboard}
-                        activeOpacity={0.7}
+                        activeOpacity={0.8}
                     >
                         <MaterialCommunityIcons name="clipboard-text-multiple" size={20} color="white" />
                         <Text style={styles.copyAllText}>Salin Semua</Text>
@@ -126,8 +140,11 @@ export default function StokBarangHabisScreen() {
                     contentContainerStyle={styles.listContainer}
                     ListEmptyComponent={
                         <View style={styles.emptyState}>
-                            <MaterialCommunityIcons name="check-circle-outline" size={60} color="#DDD" />
-                            <Text style={styles.emptyText}>Semua stok masih aman!</Text>
+                            <View style={styles.emptyIconCircle}>
+                                <MaterialCommunityIcons name="check-bold" size={50} color={COLORS.primary} />
+                            </View>
+                            <Text style={styles.emptyTitle}>Stok Aman!</Text>
+                            <Text style={styles.emptyText}>Semua bahan masih tersedia cukup.</Text>
                         </View>
                     }
                 />
@@ -137,138 +154,138 @@ export default function StokBarangHabisScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#F2F5F8' },
-    contentWrapper: { flex: 1, padding: 20, alignSelf: 'center', width: '100%', maxWidth: 800 },
-    headerRow: { 
-        flexDirection: 'row', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        marginBottom: 20 
+    container: {
+        flex: 1,
+        backgroundColor: COLORS.primaryLight
     },
-    headerTitle: { fontSize: 22, fontWeight: 'bold' },
-    copyAllBtn: { 
-        backgroundColor: 'black', 
-        flexDirection: 'row', 
-        padding: 10, 
-        borderRadius: 10, 
+    contentWrapper: {
+        flex: 1,
+        paddingTop: 20,
+        alignSelf: 'center',
+        width: '100%',
+        maxWidth: isTablet ? 1000 : '100%'
+    },
+    headerRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
-        gap: 8
+        marginBottom: 25,
+        paddingHorizontal: 20
     },
-    copyAllText: { color: 'white', fontWeight: 'bold', fontSize: 12 },
+    headerTitle: {
+        fontSize: isTablet ? 26 : 22,
+        fontWeight: '900',
+        color: COLORS.textDark
+    },
+    headerSubtitle: {
+        fontSize: 13,
+        color: COLORS.slate,
+        marginTop: 2
+    },
+    copyAllBtn: {
+        backgroundColor: COLORS.primary,
+        flexDirection: 'row',
+        paddingVertical: 12,
+        paddingHorizontal: 18,
+        borderRadius: 15,
+        alignItems: 'center',
+        gap: 8,
+        elevation: 5,
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+    },
+    copyAllText: { color: 'white', fontWeight: 'bold', fontSize: 13 },
+    listContainer: {
+        paddingHorizontal: 10,
+        paddingBottom: 40
+    },
+    columnWrapper: {
+        justifyContent: 'space-between',
+        paddingHorizontal: 10
+    },
+    shadowWrapper: {
+        marginVertical: 8,
+        marginHorizontal: 16,
+        borderRadius: 20,
+        backgroundColor: 'white',
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 10,
+    },
     cardItem: {
         flexDirection: 'row',
         backgroundColor: 'white',
-        padding: 20,
-        borderRadius: 15,
+        padding: 18,
+        borderRadius: 20,
         alignItems: 'center',
-        overflow: 'hidden',
     },
     cardLeft: { flex: 1 },
-    itemName: { fontSize: 16, fontWeight: 'bold' },
-    itemStock: { fontSize: 13, color: 'red', marginTop: 2 },
-    
-    // Counter Styles
-    counterContainer: { 
-        flexDirection: 'row', 
-        alignItems: 'center', 
-        backgroundColor: '#EEE', 
-        borderRadius: 10,
-        marginHorizontal: 15
+    itemName: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: COLORS.textDark
     },
-    counterBtn: { padding: 8 },
-    jumlahText: { 
-        fontSize: 16, 
-        fontWeight: 'bold', 
-        minWidth: 30, 
-        textAlign: 'center' 
+    stockBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 6,
+        gap: 4
     },
-    actionBtn: { padding: 5 },
-    shadowWrapper: {
-        // 1. Berikan ruang agar bayangan tidak terpotong container induk
-        margin: 10, 
-        borderRadius: 20,
-        backgroundColor: 'white', // Wajib di Android agar elevation muncul
-
-        // 2. Setting Bayangan (iOS)
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.2,
-        shadowRadius: 10,
-
-        // 3. Setting Bayangan (Android)
-        elevation: 10,
-
-        // PENTING: Jangan gunakan overflow: 'hidden' di sini!
+    itemStock: {
+        fontSize: 13,
+        color: COLORS.danger,
+        fontWeight: '700'
     },
-}); 
-//     container: {
-//         flex: 1,
-//         backgroundColor: 'white',
-//     },
-//     contentWrapper: {
-//         flex: 1,
-//         paddingHorizontal: 20,
-//         paddingTop: 30,
-//         alignSelf: 'center',
-//         width: '100%',
-//         maxWidth: 700, // Menjaga layout tetap rapi di tablet
-//     },
-//     headerRow: {
-//         flexDirection: 'row',
-//         justifyContent: 'space-between',
-//         alignItems: 'center',
-//         marginBottom: 25,
-//     },
-//     headerTitle: {
-//         fontSize: isTablet ? 24 : 20,
-//         fontWeight: 'bold',
-//         color: '#000',
-//     },
-//     copyAllBtn: {
-//         backgroundColor: 'black',
-//         padding: 10,
-//         borderRadius: 10,
-//         elevation: 3,
-//         shadowColor: '#000',
-//         shadowOffset: { width: 0, height: 2 },
-//         shadowOpacity: 0.2,
-//         shadowRadius: 3,
-//     },
-//     listContainer: {
-//         paddingBottom: 20,
-//     },
-//     cardItem: {
-//         flexDirection: 'row',
-//         justifyContent: 'space-between',
-//         alignItems: 'center',
-//         borderWidth: 1,
-//         borderColor: '#000',
-//         borderRadius: 18,
-//         paddingVertical: 18,
-//         paddingHorizontal: 20,
-//         marginBottom: 15,
-//         backgroundColor: 'white',
-//     },
-//     cardLeft: {
-//         flex: 1,
-//     },
-//     itemName: {
-//         fontSize: isTablet ? 18 : 16,
-//         fontWeight: 'bold',
-//         color: '#000',
-//         marginBottom: 4,
-//     },
-//     itemStock: {
-//         fontSize: 14,
-//         color: '#666',
-//     },
-//     emptyState: {
-//         alignItems: 'center',
-//         marginTop: 100,
-//     },
-//     emptyText: {
-//         marginTop: 15,
-//         color: '#999',
-//         fontSize: 16,
-//     }
-// });
+    counterContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: COLORS.primaryLight,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: COLORS.accent,
+        overflow: 'hidden'
+    },
+    counterBtn: {
+        padding: 10,
+        backgroundColor: COLORS.accent
+    },
+    jumlahWrapper: {
+        minWidth: 40,
+        alignItems: 'center',
+    },
+    jumlahText: {
+        fontSize: 16,
+        fontWeight: '900',
+        color: COLORS.textDark,
+    },
+    emptyState: {
+        alignItems: 'center',
+        marginTop: 100,
+        paddingHorizontal: 40
+    },
+    emptyIconCircle: {
+        width: 100,
+        height: 100,
+        borderRadius: 50,
+        backgroundColor: COLORS.white,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 20,
+        elevation: 5,
+    },
+    emptyTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: COLORS.textDark
+    },
+    emptyText: {
+        color: COLORS.slate,
+        fontSize: 14,
+        textAlign: 'center',
+        marginTop: 8
+    },
+});

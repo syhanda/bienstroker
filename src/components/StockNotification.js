@@ -50,7 +50,10 @@ export async function sendLowStockNotification(minimumItems) {
         identifier: "notifikasi_stok_kritis",
         content: {
           title: "Peringatan stok minimum",
-          body: `Ada ${minimumItems.length} bahan yang mencapai minimum, lakukan restock segera`
+          body: `Ada ${minimumItems.length} bahan yang mencapai minimum, lakukan restock segera`,
+          data: {
+            screen: 'stokBarangHabis'
+          }
         },
         trigger: null
       });

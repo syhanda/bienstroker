@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "invenApp",
-    "slug": "invenApp",
+    "name": "BienStroker",
+    "slug": "BienStroker",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

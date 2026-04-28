@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { 
-    View, Text, StyleSheet, TouchableOpacity, 
-    FlatList, Alert, Dimensions 
+import {
+    View, Text, StyleSheet, TouchableOpacity,
+    FlatList, Alert, Dimensions
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -14,6 +14,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 const { width } = Dimensions.get('window');
 const isTablet = width > 600;
 
+const COLORS = {
+    primary: '#10B981',      // Emerald Green
+    primaryLight: '#F0FDFA', // Background Mint
+    textDark: '#064E3B',     // Hijau Gelap
+    white: '#FFFFFF',
+    danger: '#EF4444',       // Merah stok keluar
+    border: '#E2E8F0',
+    slate: '#64748B',
+};
+
 const dataBulan = [
     { label: 'JANUARI', value: '01' }, { label: 'FEBRUARI', value: '02' },
     { label: 'MARET', value: '03' }, { label: 'APRIL', value: '04' },
@@ -24,15 +34,14 @@ const dataBulan = [
 ];
 
 export default function LaporanScreen() {
-    const [bulan, setBulan] = useState(('0' + (new Date().getMonth() + 1)).slice(-2)); // Default Maret
-    const [tahun, setTahun] = useState(new Date().getFullYear().toString()); // Default 2026
+    const [bulan, setBulan] = useState(('0' + (new Date().getMonth() + 1)).slice(-2)); // Default current month
+    const [tahun, setTahun] = useState(new Date().getFullYear().toString()); // Default current year
     const [dataLaporan, setDataLaporan] = useState([]);
-    const [total, setTotal] = useState({ masuk: 0, keluar: 0 });
     const isFetchingRef = React.useRef(false);
 
     const tahunSekarang = new Date().getFullYear();
 
-    // Membuat array 5 tahun terakhir (2026, 2025, 2024, 2023, 2022)
+    // Membuat array 5 tahun terakhir
     const dataTahun = Array.from({ length: 5 }, (_, i) => {
         const tahun = (tahunSekarang - i).toString();
         return { label: tahun, value: tahun };
@@ -52,20 +61,33 @@ export default function LaporanScreen() {
                 const db = await getDb();
                 try {
                     const data = await db.getAllAsync(`
-                        SELECT tanggal, SUM(pemakaian) AS total_pemakaian, SUM(pemasukan) AS total_pemasukan FROM (
-                            SELECT p.tanggal, pi.jumlah AS pemasukan, 0 AS pemakaian FROM pemasukan p JOIN pemasukan_item pi ON p.id = pi.pemasukan_id WHERE strftime('%Y-%m', p.tanggal) = ?
-                            UNION ALL
-                            SELECT p.tanggal, 0 AS pemasukan, pi.jumlah AS pemakaian FROM pemakaian p JOIN pemakaian_item pi ON p.id = pi.pemakaian_id WHERE strftime('%Y-%m', p.tanggal) = ?
-                        ) AS gabungan GROUP BY tanggal ORDER BY tanggal ASC`, 
+                        SELECT 
+                            b.id,
+                            b.nama,
+                            b.satuan,
+                            COALESCE(SUM(masuk.jumlah), 0) AS total_pemasukan,
+                            COALESCE(SUM(keluar.jumlah), 0) AS total_pemakaian
+                        FROM bahan b
+                        LEFT JOIN (
+                            SELECT pi.bahan_id, pi.jumlah 
+                            FROM pemasukan_item pi 
+                            JOIN pemasukan p ON pi.pemasukan_id = p.id 
+                            WHERE strftime('%Y-%m', p.tanggal) = ?
+                        ) masuk ON b.id = masuk.bahan_id
+                        LEFT JOIN (
+                            SELECT pei.bahan_id, pei.jumlah 
+                            FROM pemakaian_item pei 
+                            JOIN pemakaian p ON pei.pemakaian_id = p.id 
+                            WHERE strftime('%Y-%m', p.tanggal) = ?
+                        ) keluar ON b.id = keluar.bahan_id
+                        GROUP BY b.id, b.nama
+                        HAVING total_pemasukan > 0 OR total_pemakaian > 0
+                        ORDER BY b.nama ASC`,
                         periodeLaporan, periodeLaporan
                     );
 
                     if (isActive) {
                         setDataLaporan(data);
-                        setTotal({
-                            masuk: data.reduce((sum, item) => sum + item.total_pemasukan, 0),
-                            keluar: data.reduce((sum, item) => sum + item.total_pemakaian, 0)
-                        });
                     }
                 } catch (err) {
                     console.error('fetchLaporan error', err);
@@ -83,9 +105,9 @@ export default function LaporanScreen() {
         const tableRows = dataLaporan.map((item, index) => `
             <tr>
                 <td style="text-align:center">${index + 1}</td>
-                <td>${item.tanggal}</td>
-                <td style="text-align:right">${item.total_pemasukan}</td>
-                <td style="text-align:right">${item.total_pemakaian}</td>
+                <td>${item.nama}</td>
+                <td style="text-align:right">${item.total_pemasukan} ${item.satuan || ''}</td>
+                <td style="text-align:right">${item.total_pemakaian} ${item.satuan || ''}</td>
             </tr>
         `).join('');
 
@@ -98,8 +120,6 @@ export default function LaporanScreen() {
                         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
                         th, td { border: 1px solid #000; padding: 10px; text-align: left; }
                         th { background-color: #f2f2f2; }
-                        .summary { margin-top: 30px; }
-                        .summary-text { font-size: 18px; font-weight: bold; }
                     </style>
                 </head>
                 <body>
@@ -111,17 +131,13 @@ export default function LaporanScreen() {
                         <thead>
                             <tr>
                                 <th>No</th>
-                                <th>Tanggal</th>
+                                <th>Nama Bahan</th>
                                 <th>Total Masuk</th>
                                 <th>Total Keluar</th>
                             </tr>
                         </thead>
                         <tbody>${tableRows}</tbody>
                     </table>
-                    <div class="summary">
-                        <p class="summary-text">Total Masuk: ${total.masuk}</p>
-                        <p class="summary-text">Total Keluar: ${total.keluar}</p>
-                    </div>
                 </body>
             </html>
         `;
@@ -137,97 +153,120 @@ export default function LaporanScreen() {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.contentWrapper}>
-                {/* FILTER PERIODE DENGAN CUSTOMDROPDOWN */}
+
+                {/* --- 1. FILTER PERIODE --- */}
                 <View style={styles.periodCard}>
-                    <Text style={styles.labelHeader}>Periode Laporan:</Text>
+                    <View style={styles.periodHeader}>
+                        <MaterialCommunityIcons name="calendar-search" size={20} color={COLORS.primary} />
+                        <Text style={styles.labelHeader}>Periode Laporan</Text>
+                    </View>
                     <View style={styles.dropdownRow}>
                         <View style={styles.dropdownWrapper}>
-                            <DropdownComponent 
+                            <DropdownComponent
                                 data={dataBulan}
                                 value={bulan}
                                 onChange={setBulan}
                                 placeholder="Bulan"
+                                style={styles.filterDropdown}
+                                styleSelectedText={styles.selectedTextFilter}
                             />
                         </View>
                         <View style={styles.dropdownWrapper}>
-                            <DropdownComponent 
+                            <DropdownComponent
                                 data={dataTahun}
                                 value={tahun}
                                 onChange={setTahun}
                                 placeholder="Tahun"
+                                style={styles.filterDropdown}
+                                styleSelectedText={styles.selectedTextFilter}
                             />
                         </View>
                     </View>
                 </View>
 
-                {/* RINGKASAN STATISTIK */}
-                <View style={styles.statsContainer}>
-                    <View style={styles.statsRow}>
-                        <Text style={styles.statsLabel}>Total Masuk</Text>
-                        <Text style={[styles.statsValue, { color: '#2DCE89' }]}>+{total.masuk}</Text>
-                    </View>
-                    {/* <View style={styles.divider} /> */}
-                    <View style={styles.statsRow}>
-                        <Text style={styles.statsLabel}>Total Keluar</Text>
-                        <Text style={[styles.statsValue, { color: '#d33131' }]}>-{total.keluar}</Text>
-                    </View>
-                    <View style={styles.divider} />
+                {/* --- 2. TABEL LAPORAN --- */}
+                <View style={styles.tableHeader}>
+                    <Text style={[styles.tableHeaderText, { flex: .5 }]}>No</Text>
+                    <Text style={[styles.tableHeaderText, { flex: 2 }]}>Nama Bahan</Text>
+                    <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>Masuk</Text>
+                    <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>Keluar</Text>
                 </View>
 
-                {/* DAFTAR TRANSAKSI (Gaya Tabel/List Bergaris) */}
-                <Text style={styles.detailText}>Detail</Text>
                 <FlatList
                     data={dataLaporan}
-                    keyExtractor={(item, index) => index.toString()}
-                    contentContainerStyle={{ paddingBottom: 20 }}
-                    ListEmptyComponent={<Text style={styles.emptyText}>Tidak ada data pada periode ini.</Text>}
-                    renderItem={({ item }) => (
-                        <View style={styles.listItem}>
-                            <Text style={styles.listDate}>{item.tanggal}</Text>
-                            <View style={styles.listValueContainer}>
-                                <Text style={styles.valIn}>+{item.total_pemasukan}</Text>
-                                <Text style={styles.valOut}>-{item.total_pemakaian}</Text>
-                            </View>
+                    keyExtractor={(item) => item.id.toString()}
+                    contentContainerStyle={{ paddingBottom: 100 }}
+                    ListEmptyComponent={
+                        <View style={styles.emptyContainer}>
+                            <MaterialCommunityIcons name="database-off-outline" size={60} color={COLORS.border} />
+                            <Text style={styles.emptyText}>Tidak ada data pada periode ini.</Text>
+                        </View>
+                    }
+                    renderItem={({ item, index }) => (
+                        <View style={styles.tableRow}>
+                            <Text style={[styles.tableRowText, { flex: .5, fontWeight: 'bold', color: COLORS.textDark }]} numberOfLines={2}>
+                                {index + 1}
+                            </Text>
+                            <Text style={[styles.tableRowText, { flex: 2, fontWeight: 'bold', color: COLORS.textDark }]} numberOfLines={2}>
+                                {item.nama}
+                            </Text>
+                            <Text style={[styles.tableRowText, styles.valIn, { flex: 1, textAlign: 'center' }]}>
+                                +{item.total_pemasukan}
+                            </Text>
+                            <Text style={[styles.tableRowText, styles.valOut, { flex: 1, textAlign: 'center' }]}>
+                                -{item.total_pemakaian}
+                            </Text>
                         </View>
                     )}
                 />
 
-                {/* TOMBOL CETAK PDF */}
-                <TouchableOpacity style={styles.btnCetak} onPress={cetakPDF} activeOpacity={0.8}>
-                    <MaterialCommunityIcons name="file-pdf-box" size={24} color="white" />
-                    <Text style={styles.btnText}>CETAK PDF</Text>
-                </TouchableOpacity>
+                {/* --- 3. TOMBOL CETAK PDF --- */}
+                <View style={styles.footer}>
+                    <TouchableOpacity style={styles.btnCetak} onPress={cetakPDF} activeOpacity={0.8}>
+                        <MaterialCommunityIcons name="file-pdf-box" size={24} color="white" />
+                        <Text style={styles.btnText}>CETAK</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </SafeAreaView>
     );
 }
 
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'white',
+        backgroundColor: COLORS.primaryLight,
     },
     contentWrapper: {
         flex: 1,
-        paddingHorizontal: 20,
-        paddingTop: 20,
+        paddingHorizontal: isTablet ? 40 : 20,
         alignSelf: 'center',
         width: '100%',
-        maxWidth: 750, // Menjaga layout tetap rapi di tablet
+        maxWidth: 900,
     },
     periodCard: {
+        backgroundColor: COLORS.white,
+        borderRadius: 25,
+        padding: 13,
+        marginBottom: 15,
         borderWidth: 1,
-        borderColor: '#00B4D8',
-        borderRadius: 20,
-        padding: 20,
-        marginBottom: 25,
-        backgroundColor: 'white',
+        borderColor: COLORS.border,
+        elevation: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
+    },
+    periodHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 15,
+        gap: 8,
     },
     labelHeader: {
-        fontSize: isTablet ? 18 : 16,
+        fontSize: 16,
         fontWeight: 'bold',
-        marginBottom: 15,
+        color: COLORS.textDark,
     },
     dropdownRow: {
         flexDirection: 'row',
@@ -236,77 +275,83 @@ const styles = StyleSheet.create({
     dropdownWrapper: {
         flex: 1,
     },
-    statsContainer: {
-        marginBottom: 20,
+    filterDropdown: {
+        height: 40,
+        borderRadius: 12
     },
-    statsRow: {
+    selectedTextFilter: {
+        fontSize: 13
+    },
+    tableHeader: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 12,
+        backgroundColor: COLORS.primary,
+        padding: 15,
+        borderTopLeftRadius: 18,
+        borderTopRightRadius: 18,
+        marginTop: 10,
     },
-    statsLabel: {
-        fontSize: isTablet ? 18 : 16,
-        fontWeight: '500',
-        color: '#333',
-    },
-    statsValue: {
-        fontSize: isTablet ? 22 : 18,
+    tableHeaderText: {
+        color: COLORS.white,
         fontWeight: 'bold',
-    },
-    divider: {
-        height: 1,
-        backgroundColor: '#EEEEEE',
-    },
-    detailText: {
-        fontSize: 16,
-        color: '#95A5A6',
-        marginTop: 2,
-        marginBottom: 6
-    },
-    listItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingVertical: 15,
-        borderBottomWidth: 1,
-        borderColor: '#F0F0F0',
-    },
-    listDate: {
         fontSize: 14,
-        fontWeight: '600',
     },
-    listValueContainer: {
+    tableRow: {
         flexDirection: 'row',
-        gap: 15,
+        backgroundColor: COLORS.white,
+        padding: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: COLORS.border,
+        alignItems: 'center',
+    },
+    tableRowText: {
+        fontSize: 14,
     },
     valIn: {
-        color: '#2DCE89',
+        color: COLORS.primary,
         fontWeight: 'bold',
     },
     valOut: {
-        color: '#d33131',
+        color: COLORS.danger,
         fontWeight: 'bold',
     },
+    emptyContainer: {
+        alignItems: 'center',
+        marginTop: 60,
+    },
     emptyText: {
-        textAlign: 'center',
-        marginTop: 30,
-        color: '#999',
+        marginTop: 10,
+        color: COLORS.slate,
+        fontStyle: 'italic',
+    },
+    footer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: 20,
+        backgroundColor: COLORS.primaryLight,
     },
     btnCetak: {
-        backgroundColor: '#00B4D8',
+        backgroundColor: COLORS.primary,
         flexDirection: 'row',
-        height: 55,
-        borderRadius: 15,
+        height: 60,
+        borderRadius: 18,
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 10,
-        marginBottom: 10,
-        elevation: 4,
+        alignSelf: 'center',
+        width: '100%',
+        maxWidth: isTablet ? 400 : '100%',
+        elevation: 8,
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
     },
     btnText: {
         color: 'white',
-        fontSize: 14,
+        fontSize: 15,
         fontWeight: 'bold',
         marginLeft: 10,
+        letterSpacing: 0.5,
     },
 });

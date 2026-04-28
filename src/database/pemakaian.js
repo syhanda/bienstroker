@@ -36,10 +36,10 @@ export async function getAllPemakaian() {
     const db = await getDb();
     try {
         const result = await db.getAllAsync(
-            `SELECT p.id, p.tanggal, SUM(pi.jumlah) AS total 
+            `SELECT p.tanggal, SUM(pi.jumlah) AS total 
              FROM pemakaian_item pi 
              JOIN pemakaian p ON pi.pemakaian_id = p.id 
-             GROUP BY p.id, p.tanggal 
+             GROUP BY p.tanggal 
              ORDER BY p.tanggal DESC`
         );
         return result ?? [];
@@ -48,6 +48,37 @@ export async function getAllPemakaian() {
         return [];
     }
 }
+
+export async function getPemakaianByDate(tanggal) {
+    const db = await getDb();
+
+    try {
+        const result = await db.getAllAsync(
+            `SELECT b.nama, b.satuan, SUM(pi.jumlah) as jumlah 
+             FROM pemakaian_item pi 
+             INNER JOIN pemakaian p ON pi.pemakaian_id = p.id 
+             INNER JOIN bahan b ON pi.bahan_id = b.id 
+             WHERE p.tanggal = ?
+             GROUP BY b.id, b.nama, b.satuan`, 
+            tanggal
+        );
+
+        if (!result || result.length === 0) return null;
+
+        return {
+            tanggal: tanggal,
+            items: result.map(item => ({
+                bahan_nama: item.nama,
+                jumlah: item.jumlah,
+                satuan: item.satuan
+            }))
+        };
+    } catch (e) {
+        console.error('Error get pemakaian by date:', e);
+        return null;
+    }
+}
+
 
 export async function getPemakaianDetail(id) {
     const db = await getDb();
