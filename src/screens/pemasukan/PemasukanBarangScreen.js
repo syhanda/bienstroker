@@ -15,7 +15,7 @@ import { AuthContext } from '../../AuthContext';
 
 const { width } = Dimensions.get('window');
 const isTablet = width > 600;
-const numColumns = isTablet ? 2 : 1; // 2 Kolom untuk tablet, 1 untuk HP
+const numColumns = 1; // 2 Kolom untuk tablet, 1 untuk HP
 
 const COLORS = {
   primary: '#10B981',      // Emerald Green

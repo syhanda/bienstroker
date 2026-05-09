@@ -50,6 +50,10 @@ export default function LoginScreen() {
         }
        
         const user = await getUserByUsername(username);
+        if (!user) {
+            Alert.alert("Login Gagal", "Username atau password salah");
+            return;
+        }
         
         if (password == user.password) {
             const loginData = { username: user.username, level: user.level }

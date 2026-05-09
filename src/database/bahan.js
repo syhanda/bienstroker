@@ -96,36 +96,41 @@ export async function deleteBahan(id) {
 }
 
 export async function getStats() {
-    const db = await getDb();
+  const db = await getDb();
 
-    try {
-        const bulanIni = new Date().toISOString().slice(0, 7);
+  try {
+    const hariIni = new Date().toLocaleDateString('en-CA');
 
-        const masuk = await db.getFirstAsync(
-            `SELECT SUM(pemasukan_item.jumlah) as total_pemasukan 
-             FROM pemasukan_item 
-             JOIN pemasukan ON pemasukan_item.pemasukan_id = pemasukan.id 
-             WHERE strftime('%Y-%m', pemasukan.tanggal) = ?`, 
-            bulanIni
-        );
+    const masuk = await db.getFirstAsync(
+      `SELECT SUM(pemasukan_item.jumlah) as total_pemasukan
+       FROM pemasukan_item
+       JOIN pemasukan ON pemasukan_item.pemasukan_id = pemasukan.id
+       WHERE date(pemasukan.tanggal) = ?`,
+      [hariIni]
+    );
 
-        const keluar = await db.getFirstAsync(
-            `SELECT SUM(pemakaian_item.jumlah) as total_pemakaian 
-             FROM pemakaian_item 
-             JOIN pemakaian ON pemakaian_item.pemakaian_id = pemakaian.id 
-             WHERE strftime('%Y-%m', pemakaian.tanggal) = ?`, 
-            bulanIni
-        );
+    const keluar = await db.getFirstAsync(
+      `SELECT SUM(pemakaian_item.jumlah) as total_pemakaian
+       FROM pemakaian_item
+       JOIN pemakaian ON pemakaian_item.pemakaian_id = pemakaian.id
+       WHERE date(pemakaian.tanggal) = ?`,
+      [hariIni]
+    );
 
-        return {
-            pemasukan: { total_pemasukan: masuk?.total_pemasukan ?? 0 },
-            pemakaian: { total_pemakaian: keluar?.total_pemakaian ?? 0 }
-        };
-    } catch (error) {
-        console.error("Gagal memuat statistik:", error);
-        return {
-            pemasukan: { total_pemasukan: 0 },
-            pemakaian: { total_pemakaian: 0 }
-        };
-    }
+    return {
+      pemasukan: {
+        total_pemasukan: masuk?.total_pemasukan ?? 0
+      },
+      pemakaian: {
+        total_pemakaian: keluar?.total_pemakaian ?? 0
+      }
+    };
+  } catch (error) {
+    console.error('Gagal memuat statistik:', error);
+
+    return {
+      pemasukan: { total_pemasukan: 0 },
+      pemakaian: { total_pemakaian: 0 }
+    };
+  }
 }

@@ -224,7 +224,7 @@ export default function LaporanScreen() {
                 <View style={styles.footer}>
                     <TouchableOpacity style={styles.btnCetak} onPress={cetakPDF} activeOpacity={0.8}>
                         <MaterialCommunityIcons name="file-pdf-box" size={24} color="white" />
-                        <Text style={styles.btnText}>CETAK</Text>
+                        <Text style={styles.btnText}>UNDUH</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -338,9 +338,9 @@ const styles = StyleSheet.create({
         borderRadius: 18,
         justifyContent: 'center',
         alignItems: 'center',
-        alignSelf: 'center',
+        alignSelf: 'flex-end',
         width: '100%',
-        maxWidth: isTablet ? 400 : '100%',
+        maxWidth: isTablet ? 150 : '100%',
         elevation: 8,
         shadowColor: COLORS.primary,
         shadowOffset: { width: 0, height: 5 },

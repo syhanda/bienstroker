@@ -118,7 +118,7 @@ export default function HomeScreen({ navigation }) {
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <Text style={styles.dateLabel}>
-                    Ringkasan {new Date().toLocaleString('id-ID', { month: 'long', year: 'numeric' })}
+                    Ringkasan {new Date().toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </Text>
 
                 {/* STATS CARDS */}
@@ -173,9 +173,13 @@ export default function HomeScreen({ navigation }) {
 
                 {/* MAIN MENU BUTTONS */}
                 <View style={styles.menuList}>
-                    <MenuButton icon="cube-outline" title="Stok Barang" onPress={() => navigation.navigate('bahan')} />
-                    <MenuButton icon="archive-arrow-down-outline" title="Kelola Stok Masuk" onPress={() => navigation.navigate('pemasukan')} />
-                    <MenuButton icon="trending-down" title="Pemakaian Harian" onPress={() => navigation.navigate('pemakaian')} />
+                    {user?.level?.toLowerCase() !== 'owner' && (
+                        <>
+                            <MenuButton icon="cube-outline" title="Stok Barang" onPress={() => navigation.navigate('bahan')} />
+                            <MenuButton icon="archive-arrow-down-outline" title="Kelola Stok Masuk" onPress={() => navigation.navigate('pemasukan')} />
+                            <MenuButton icon="trending-down" title="Pemakaian Harian" onPress={() => navigation.navigate('pemakaian')} />
+                        </>
+                    )}
                     <MenuButton icon="file-document-edit-outline" title="Laporan" onPress={() => navigation.navigate('laporan')} />
                 </View>
             </ScrollView>

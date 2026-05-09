@@ -75,7 +75,6 @@ export default function ModalInputBahan({ data, onSelect, visible, onClose }) {
                 <View style={styles.modalContainer}>
                     {/* Header Modal */}
                     <View style={styles.modalHeader}>
-                        <MaterialCommunityIcons name="plus-box-outline" size={24} color={COLORS.primary} />
                         <Text style={styles.modalTitle}>Input Data Barang</Text>
                     </View>
 

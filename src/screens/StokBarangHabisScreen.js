@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import {
     View,
     Text,
@@ -12,6 +12,7 @@ import * as Clipboard from 'expo-clipboard';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getBarangHabis } from '../database/bahan';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AuthContext } from '../AuthContext';
 
 const { width } = Dimensions.get('window');
 const isTablet = width > 600;
@@ -29,6 +30,7 @@ const COLORS = {
 
 export default function StokBarangHabisScreen() {
     const [baranghabis, setbarangHabis] = useState([]);
+    const { user } = useContext(AuthContext);
 
     async function loadData() {
         try {
@@ -90,27 +92,29 @@ export default function StokBarangHabisScreen() {
                 </View>
 
                 {/* --- CONTROLLER INCREMENT DECREMENT --- */}
-                <View style={styles.counterContainer}>
-                    <TouchableOpacity
-                        style={styles.counterBtn}
-                        onPress={() => updateJumlahPesan(item.id, -1)}
-                        activeOpacity={0.6}
-                    >
-                        <MaterialCommunityIcons name="minus" size={18} color={COLORS.textDark} />
-                    </TouchableOpacity>
+                {user?.level?.toLowerCase() === 'admin' && (
+                    <View style={styles.counterContainer}>
+                        <TouchableOpacity
+                            style={styles.counterBtn}
+                            onPress={() => updateJumlahPesan(item.id, -1)}
+                            activeOpacity={0.6}
+                        >
+                            <MaterialCommunityIcons name="minus" size={18} color={COLORS.textDark} />
+                        </TouchableOpacity>
 
-                    <View style={styles.jumlahWrapper}>
-                        <Text style={styles.jumlahText}>{item.jumlahPesan}</Text>
+                        <View style={styles.jumlahWrapper}>
+                            <Text style={styles.jumlahText}>{item.jumlahPesan}</Text>
+                        </View>
+
+                        <TouchableOpacity
+                            style={styles.counterBtn}
+                            onPress={() => updateJumlahPesan(item.id, 1)}
+                            activeOpacity={0.6}
+                        >
+                            <MaterialCommunityIcons name="plus" size={18} color={COLORS.textDark} />
+                        </TouchableOpacity>
                     </View>
-
-                    <TouchableOpacity
-                        style={styles.counterBtn}
-                        onPress={() => updateJumlahPesan(item.id, 1)}
-                        activeOpacity={0.6}
-                    >
-                        <MaterialCommunityIcons name="plus" size={18} color={COLORS.textDark} />
-                    </TouchableOpacity>
-                </View>
+                )}
             </View>
         </View>
     );
@@ -123,14 +127,16 @@ export default function StokBarangHabisScreen() {
                         <Text style={styles.headerTitle}>Perlu Order Lagi!</Text>
                         <Text style={styles.headerSubtitle}>Stok di bawah batas minimum</Text>
                     </View>
-                    <TouchableOpacity
-                        style={styles.copyAllBtn}
-                        onPress={copyAllToClipboard}
-                        activeOpacity={0.8}
-                    >
-                        <MaterialCommunityIcons name="clipboard-text-multiple" size={20} color="white" />
-                        <Text style={styles.copyAllText}>Salin Semua</Text>
-                    </TouchableOpacity>
+                    {user?.level?.toLowerCase() === 'admin' && (
+                        <TouchableOpacity
+                            style={styles.copyAllBtn}
+                            onPress={copyAllToClipboard}
+                            activeOpacity={0.8}
+                        >
+                            <MaterialCommunityIcons name="clipboard-text-multiple" size={20} color="white" />
+                            <Text style={styles.copyAllText}>Salin Semua</Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
 
                 <FlatList

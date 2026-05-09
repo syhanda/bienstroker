@@ -178,7 +178,7 @@ export default function PemakaianBarangForm({ navigation }) {
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Ionicons name="cart-outline" size={60} color="#CBD5E1" />
-                <Text style={styles.empty}>Belum ada bahan terpilih.</Text>
+                <Text style={styles.empty}>Belum ada barang terpilih.</Text>
               </View>
             }
             contentContainerStyle={styles.flatListContent}
@@ -367,41 +367,3 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5
   }
 });
-
-// const styles = StyleSheet.create({
-//   container: { flex: 1, backgroundColor: '#F5F7FA', padding: 20 },
-//   title: { fontSize: 22, fontWeight: 'bold', color: '#333', marginBottom: 20 },
-//   sectionLabel: { fontSize: 16, fontWeight: 'bold', color: '#555' },
-//   listHeader: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     alignItems: 'center',
-//     marginBottom: 10
-//   },
-//   btnAdd: { backgroundColor: '#E0F2F1', paddingVertical: 10, paddingHorizontal: 15, borderRadius: 8 },
-//   btnAddText: { color: '#1A535C', fontWeight: 'bold', fontSize: 12 },
-//   cardItem: {
-//     backgroundColor: '#FFF',
-//     padding: 15,
-//     borderRadius: 12,
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     alignItems: 'center',
-//     marginBottom: 10,
-//     elevation: 2
-//   },
-//   namaBahan: { fontSize: 16, fontWeight: 'bold' },
-//   jumlahBahan: { fontSize: 14, color: '#666' },
-//   textHapus: { fontSize: 18 },
-//   empty: { textAlign: 'center', marginTop: 30, color: '#999', fontStyle: 'italic' },
-//   footer: {
-//     position: 'absolute',
-//     bottom: 0,
-//     left: 0,
-//     right: 0,
-//     padding: 20,
-//     backgroundColor: '#F8F9FA'
-//   },
-//   btnSimpan: { backgroundColor: '#00695C', padding: 16, borderRadius: 12, alignItems: 'center' },
-//   btnSimpanText: { color: '#FFF', fontSize: 16, fontWeight: 'bold' }
-// });
