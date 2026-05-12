@@ -146,7 +146,7 @@ export default function LoginScreen() {
                         {/* --- LOGO / ICON SECTION --- */}
                         <View style={styles.headerSection}>
                             <View style={styles.logoCircle}>
-                                <Image source={require('../../assets/logo_bien.jpeg')} style={styles.logo} />
+                                <Image source={require('../../assets/icon-bien.png')} style={styles.logo} />
                             </View>
                             <Text style={styles.welcomeText}>Selamat Datang</Text>
                         </View>

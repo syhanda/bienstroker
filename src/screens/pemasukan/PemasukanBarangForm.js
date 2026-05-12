@@ -204,6 +204,7 @@ export default function PemasukanBarangForm({ navigation }) {
 					onClose={() => setModalVisible(false)}
 					onSelect={tambahKeDaftar}
 					data={daftarBahanDB}
+					mode="pemasukan"
 				/>
 			)}
 		</SafeAreaView>

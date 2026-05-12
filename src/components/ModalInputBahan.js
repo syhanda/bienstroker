@@ -21,17 +21,20 @@ const COLORS = {
     white: '#FFFFFF',
 };
 
-export default function ModalInputBahan({ data, onSelect, visible, onClose }) {
+export default function ModalInputBahan({ data, onSelect, visible, onClose, mode = 'pemasukan' }) {
     const [selectedId, setSelectedId] = useState(null);
     const [jumlah, setJumlah] = useState('');
     const [satuanTeks, setSatuanTeks] = useState('');
+    const [stokSaatIni, setStokSaatIni] = useState(0);
 
     useEffect(() => {
         if (selectedId) {
             const bahanTerpilih = data.find(item => item.id === selectedId);
             setSatuanTeks(bahanTerpilih ? bahanTerpilih.satuan : '');
+            setStokSaatIni(bahanTerpilih ? bahanTerpilih.stok : 0);
         } else {
             setSatuanTeks('');
+            setStokSaatIni(0);
         }
     }, [selectedId, data]);
 
@@ -48,13 +51,35 @@ export default function ModalInputBahan({ data, onSelect, visible, onClose }) {
             return;
         }
 
-        const jumlahInt = parseInt(jumlah);
-        if (!jumlah || isNaN(jumlahInt) || jumlahInt <= 0) {
-            Alert.alert("Jumlah Tidak Valid", "Masukkan jumlah yang benar.");
+        const inputVal = parseInt(jumlah);
+        if (!jumlah || isNaN(inputVal) || inputVal < 0) {
+            Alert.alert("Input Tidak Valid", "Masukkan angka yang benar.");
             return;
         }
 
-        onSelect(selectedId, jumlahInt);
+        let hasilJumlah = inputVal;
+
+        if (mode === 'pemakaian') {
+            if (inputVal > stokSaatIni) {
+                Alert.alert("Gagal", "Sisa stok tidak boleh melebihi stok saat ini.");
+                return;
+            }
+            hasilJumlah = stokSaatIni - inputVal;
+            
+            if (hasilJumlah === 0) {
+                Alert.alert("Konfirmasi", "Sisa stok sama dengan stok saat ini. Artinya tidak ada pemakaian. Lanjutkan?", [
+                    { text: "Batal", style: "cancel" },
+                    { text: "Ya", onPress: () => processAdd(hasilJumlah) }
+                ]);
+                return;
+            }
+        }
+
+        processAdd(hasilJumlah);
+    }
+
+    function processAdd(jumlahFinal) {
+        onSelect(selectedId, jumlahFinal);
         handleClose();
     }
 
@@ -75,7 +100,9 @@ export default function ModalInputBahan({ data, onSelect, visible, onClose }) {
                 <View style={styles.modalContainer}>
                     {/* Header Modal */}
                     <View style={styles.modalHeader}>
-                        <Text style={styles.modalTitle}>Input Data Barang</Text>
+                        <Text style={styles.modalTitle}>
+                            {mode === 'pemakaian' ? 'Input Sisa Stok' : 'Input Data Barang'}
+                        </Text>
                     </View>
 
                     {/* Label & Dropdown */}
@@ -89,8 +116,16 @@ export default function ModalInputBahan({ data, onSelect, visible, onClose }) {
                         onChange={(val) => setSelectedId(val)}
                     />
 
+                    {selectedId ? (
+                        <View style={styles.stockInfo}>
+                            <Text style={styles.stockInfoText}>Stok Saat Ini: <Text style={{ fontWeight: '900' }}>{stokSaatIni} {satuanTeks}</Text></Text>
+                        </View>
+                    ) : null}
+
                     {/* Label & Input Jumlah */}
-                    <Text style={styles.modalLabel}>Jumlah</Text>
+                    <Text style={styles.modalLabel}>
+                        {mode === 'pemakaian' ? 'Sisa Stok di Gudang' : 'Jumlah'}
+                    </Text>
                     <View style={styles.inputRow}>
                         <TextInput
                             style={styles.modalInput}
@@ -106,6 +141,14 @@ export default function ModalInputBahan({ data, onSelect, visible, onClose }) {
                             </View>
                         ) : null}
                     </View>
+
+                    {mode === 'pemakaian' && selectedId && jumlah !== '' && !isNaN(parseInt(jumlah)) && (
+                        <View style={styles.resultInfo}>
+                            <Text style={styles.resultText}>
+                                Pemakaian: <Text style={{ color: COLORS.danger, fontWeight: '900' }}>{Math.max(0, stokSaatIni - parseInt(jumlah))} {satuanTeks}</Text>
+                            </Text>
+                        </View>
+                    )}
 
                     {/* Button Group */}
                     <View style={styles.buttonRow}>
@@ -240,5 +283,28 @@ const styles = StyleSheet.create({
         color: COLORS.white,
         fontWeight: 'bold',
         fontSize: 15,
+    },
+    stockInfo: {
+        marginTop: 5,
+        marginBottom: 5,
+        paddingHorizontal: 5,
+    },
+    stockInfoText: {
+        fontSize: 14,
+        color: COLORS.slate,
+    },
+    resultInfo: {
+        marginTop: 15,
+        padding: 12,
+        backgroundColor: '#FEF2F2',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#FEE2E2',
+    },
+    resultText: {
+        fontSize: 15,
+        fontWeight: '700',
+        color: COLORS.textDark,
+        textAlign: 'center',
     },
 });

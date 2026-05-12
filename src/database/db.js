@@ -38,7 +38,7 @@ export const initDb = async () => {
                 id INTEGER PRIMARY KEY AUTOINCREMENT, 
                 bahan_id INTEGER NOT NULL, 
                 pemakaian_id INTEGER NOT NULL, 
-                jumlah INTEGER NOT NULL, 
+                jumlah_pemakaian INTEGER NOT NULL,
                 CONSTRAINT fk_bahan FOREIGN KEY (bahan_id) REFERENCES bahan (id) ON DELETE CASCADE, 
                 CONSTRAINT fk_pemakaian FOREIGN KEY (pemakaian_id) REFERENCES pemakaian (id) ON DELETE CASCADE
             );
@@ -50,11 +50,25 @@ export const initDb = async () => {
                 id INTEGER PRIMARY KEY AUTOINCREMENT, 
                 bahan_id INTEGER, 
                 pemasukan_id INTEGER NOT NULL, 
-                jumlah INTEGER NOT NULL, 
+                jumlah INTEGER NOT NULL,
                 CONSTRAINT fk_bahan FOREIGN KEY (bahan_id) REFERENCES bahan (id) ON DELETE CASCADE, 
                 CONSTRAINT fk_pemasukan FOREIGN KEY (pemasukan_id) REFERENCES pemasukan (id) ON DELETE CASCADE
             );
         `);
+
+        // Migration: Rename 'jumlah' to 'jumlah_pemakaian' if it still exists in pemakaian_item
+        try {
+            const tableInfo = await db.getAllAsync(`PRAGMA table_info(pemakaian_item)`);
+            const hasJumlah = tableInfo.some(col => col.name === 'jumlah');
+            const hasJumlahPemakaian = tableInfo.some(col => col.name === 'jumlah_pemakaian');
+
+            if (hasJumlah && !hasJumlahPemakaian) {
+                await db.execAsync(`ALTER TABLE pemakaian_item RENAME COLUMN jumlah TO jumlah_pemakaian`);
+                console.log('Migration: Renamed jumlah to jumlah_pemakaian in pemakaian_item');
+            }
+        } catch (migrationError) {
+            console.error('Migration error:', migrationError);
+        }
 
         console.log('Database initialized successfully');
     } catch (error) {

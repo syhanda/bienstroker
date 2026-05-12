@@ -110,7 +110,7 @@ export async function getStats() {
     );
 
     const keluar = await db.getFirstAsync(
-      `SELECT SUM(pemakaian_item.jumlah) as total_pemakaian
+      `SELECT SUM(pemakaian_item.jumlah_pemakaian) as total_pemakaian
        FROM pemakaian_item
        JOIN pemakaian ON pemakaian_item.pemakaian_id = pemakaian.id
        WHERE date(pemakaian.tanggal) = ?`,

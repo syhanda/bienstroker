@@ -14,12 +14,12 @@ export async function insertPemakaian(data) {
 
         for (const item of data.items) {
             await db.runAsync(
-                'INSERT INTO pemakaian_item (bahan_id, pemakaian_id, jumlah) VALUES (?, ?, ?)',
-                [item.bahanId, pemakaianId, item.jumlah]
+                'INSERT INTO pemakaian_item (bahan_id, pemakaian_id, jumlah_pemakaian) VALUES (?, ?, ?)',
+                [item.bahanId, pemakaianId, item.jumlah_pemakaian]
             );
             await db.runAsync(
                 'UPDATE bahan SET stok = stok - ? WHERE id = ?',
-                [item.jumlah, item.bahanId]
+                [item.jumlah_pemakaian, item.bahanId]
             );
         }
 
@@ -36,7 +36,7 @@ export async function getAllPemakaian() {
     const db = await getDb();
     try {
         const result = await db.getAllAsync(
-            `SELECT p.tanggal, SUM(pi.jumlah) AS total 
+            `SELECT p.tanggal, SUM(pi.jumlah_pemakaian) AS total
              FROM pemakaian_item pi 
              JOIN pemakaian p ON pi.pemakaian_id = p.id 
              GROUP BY p.tanggal 
@@ -54,7 +54,7 @@ export async function getPemakaianByDate(tanggal) {
 
     try {
         const result = await db.getAllAsync(
-            `SELECT b.nama, b.satuan, SUM(pi.jumlah) as jumlah 
+            `SELECT b.nama, b.satuan, SUM(pi.jumlah_pemakaian) as jumlah_pemakaian
              FROM pemakaian_item pi 
              INNER JOIN pemakaian p ON pi.pemakaian_id = p.id 
              INNER JOIN bahan b ON pi.bahan_id = b.id 
@@ -69,7 +69,7 @@ export async function getPemakaianByDate(tanggal) {
             tanggal: tanggal,
             items: result.map(item => ({
                 bahan_nama: item.nama,
-                jumlah: item.jumlah,
+                jumlah: item.jumlah_pemakaian,
                 satuan: item.satuan
             }))
         };
@@ -85,7 +85,7 @@ export async function getPemakaianDetail(id) {
 
     try {
         const result = await db.getAllAsync(
-            `SELECT p.tanggal, b.nama, b.satuan , pi.jumlah 
+            `SELECT p.tanggal, b.nama, b.satuan , pi.jumlah_pemakaian
              FROM pemakaian p 
              JOIN pemakaian_item pi ON p.id = pi.pemakaian_id 
              JOIN bahan b ON pi.bahan_id = b.id 
@@ -99,7 +99,7 @@ export async function getPemakaianDetail(id) {
             tanggal: result[0].tanggal,
             items: result.map(item => ({
                 bahan_nama: item.nama,
-                jumlah: item.jumlah,
+                jumlah: item.jumlah_pemakaian,
                 satuan: item.satuan
             }))
         };
@@ -113,7 +113,7 @@ export async function getAllPemakaianDetail() {
     const db = await getDb();
     try {
         const result = await db.getAllAsync(
-            `SELECT p.id, p.tanggal, pi.id as item_id, pi.bahan_id, pi.jumlah 
+            `SELECT p.id, p.tanggal, pi.id as item_id, pi.bahan_id, pi.jumlah_pemakaian
              FROM pemakaian p 
              LEFT JOIN pemakaian_item pi ON p.id = pi.pemakaian_id`
         );

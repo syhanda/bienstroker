@@ -95,7 +95,7 @@ export default function PemakaianBarangScreen({ navigation }) {
         keyExtractor={(item, index) => index.toString()}
         renderItem={renderItem}
         contentContainerStyle={styles.listPadding}
-        columnWrapperStyle={isTablet ? styles.columnWrapper : null}
+        columnWrapperStyle={numColumns > 1 ? styles.columnWrapper : undefined}
         removeClippedSubviews={true}
         maxToRenderPerBatch={10}
         windowSize={5}

@@ -60,7 +60,7 @@ export default function PemakaianBarangForm({ navigation }) {
     }, [])
   );
 
-  const tambahKeDaftar = (selectedId, jumlah) => {
+  const tambahKeDaftar = (selectedId, jumlah_pemakaian) => {
     const bahan = daftarBahanDB.find(b => b.id === selectedId);
 
     if (!bahan) {
@@ -68,7 +68,7 @@ export default function PemakaianBarangForm({ navigation }) {
       return;
     }
 
-    if (bahan.stok < jumlah) {
+    if (bahan.stok < jumlah_pemakaian) {
       Alert.alert("Stok Tidak Cukup", `Sisa stok ${bahan.nama} hanya ${bahan.stok}`);
       return;
     }
@@ -77,7 +77,8 @@ export default function PemakaianBarangForm({ navigation }) {
       id: Date.now(),
       bahanId: selectedId,
       nama: bahan.nama,
-      jumlah: jumlah
+      satuan: bahan.satuan,
+      jumlah_pemakaian: jumlah_pemakaian
     };
 
     setKeranjangPemakaian(prev => [...prev, itemBaru]);
@@ -165,7 +166,7 @@ export default function PemakaianBarangForm({ navigation }) {
                 </View>
                 <View style={styles.itemInfo}>
                   <Text style={styles.namaBahan}>{item.nama}</Text>
-                  <Text style={styles.jumlahBahan}>-{item.jumlah} {item.satuan}</Text>
+                  <Text style={styles.jumlahBahan}>-{item.jumlah_pemakaian} {item.satuan}</Text>
                 </View>
                 <TouchableOpacity
                   onPress={() => hapusItem(item.id)}
@@ -207,6 +208,7 @@ export default function PemakaianBarangForm({ navigation }) {
           onClose={() => setModalVisible(false)}
           onSelect={tambahKeDaftar}
           data={daftarBahanDB}
+          mode="pemakaian"
         />
       )}
     </SafeAreaView>

@@ -9,7 +9,6 @@ import {
     Dimensions,
     Modal,
     Alert,
-    Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getBarangHabis, getStats } from '../database/bahan';
@@ -156,19 +155,21 @@ export default function HomeScreen({ navigation }) {
                     </LinearGradient>
 
                     {/* Card Stok Habis - Warning Lime/Forest */}
-                    <LinearGradient
-                        colors={['#84CC16', '#65A30D']}
-                        style={styles.card}
-                    >
-                        <View style={styles.cardHeader}>
-                            <Text style={[styles.cardTitle, { fontSize: 34, width: '60%' }]}>Total Barang Habis</Text>
-                            <MaterialCommunityIcons name="package-variant-remove" size={57} color="rgba(255,255,255,0.8)" />
-                        </View>
-                        <TouchableOpacity style={styles.detailBtn} onPress={() => { navigation.navigate('stokBarangHabis') }}>
-                            <Text style={styles.detailText}>Cek Detail</Text>
-                            <Ionicons name="chevron-forward" size={12} color="white" />
-                        </TouchableOpacity>
-                    </LinearGradient>
+                    {user?.level?.toLowerCase() !== 'owner' && (
+                        <LinearGradient
+                            colors={['#84CC16', '#65A30D']}
+                            style={styles.card}
+                        >
+                            <View style={styles.cardHeader}>
+                                <Text style={[styles.cardTitle, { fontSize: 34, width: '60%' }]}>Total Barang Habis</Text>
+                                <MaterialCommunityIcons name="package-variant-remove" size={57} color="rgba(255,255,255,0.8)" />
+                            </View>
+                            <TouchableOpacity style={styles.detailBtn} onPress={() => { navigation.navigate('stokBarangHabis') }}>
+                                <Text style={styles.detailText}>Cek Detail</Text>
+                                <Ionicons name="chevron-forward" size={12} color="white" />
+                            </TouchableOpacity>
+                        </LinearGradient>
+                    )}
                 </ScrollView>
 
                 {/* MAIN MENU BUTTONS */}
@@ -176,10 +177,10 @@ export default function HomeScreen({ navigation }) {
                     {user?.level?.toLowerCase() !== 'owner' && (
                         <>
                             <MenuButton icon="cube-outline" title="Stok Barang" onPress={() => navigation.navigate('bahan')} />
-                            <MenuButton icon="archive-arrow-down-outline" title="Kelola Stok Masuk" onPress={() => navigation.navigate('pemasukan')} />
-                            <MenuButton icon="trending-down" title="Pemakaian Harian" onPress={() => navigation.navigate('pemakaian')} />
                         </>
                     )}
+                    <MenuButton icon="archive-arrow-down-outline" title="Kelola Stok Masuk" onPress={() => navigation.navigate('pemasukan')} />
+                    <MenuButton icon="trending-down" title="Pemakaian Harian" onPress={() => navigation.navigate('pemakaian')} />
                     <MenuButton icon="file-document-edit-outline" title="Laporan" onPress={() => navigation.navigate('laporan')} />
                 </View>
             </ScrollView>

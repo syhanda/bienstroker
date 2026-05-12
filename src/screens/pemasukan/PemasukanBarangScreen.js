@@ -15,7 +15,7 @@ import { AuthContext } from '../../AuthContext';
 
 const { width } = Dimensions.get('window');
 const isTablet = width > 600;
-const numColumns = 1; // 2 Kolom untuk tablet, 1 untuk HP
+const numColumns = isTablet ? 2 : 1; // 2 Kolom untuk tablet, 1 untuk HP
 
 const COLORS = {
   primary: '#10B981',      // Emerald Green
@@ -95,7 +95,7 @@ export default function PemasukanBarangScreen({ navigation }) {
         keyExtractor={(item, index) => index.toString()}
         renderItem={renderItem}
         contentContainerStyle={styles.listPadding}
-        columnWrapperStyle={isTablet ? styles.columnWrapper : null}
+        columnWrapperStyle={numColumns > 1 ? styles.columnWrapper : undefined}
         removeClippedSubviews={true}
         maxToRenderPerBatch={10}
         windowSize={5}

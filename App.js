@@ -88,8 +88,8 @@ export default function App() {
                 await seed();
 
                 // Uncomment untuk reset DB saat development:
-                // const db = await getDb();
-                // db.execSync('DROP TABLE IF EXISTS pengguna; DROP TABLE IF EXISTS pemakaian_item; DROP TABLE IF EXISTS pemakaian; DROP TABLE IF EXISTS bahan; DROP TABLE IF EXISTS pemasukan; DROP TABLE IF EXISTS pemasukan_item;');
+//                 const db = await getDb();
+//                 db.execSync('DROP TABLE IF EXISTS pengguna; DROP TABLE IF EXISTS pemakaian_item; DROP TABLE IF EXISTS pemakaian; DROP TABLE IF EXISTS bahan; DROP TABLE IF EXISTS pemasukan; DROP TABLE IF EXISTS pemasukan_item;');
 
                 setDbReady(true);
             } catch (error) {

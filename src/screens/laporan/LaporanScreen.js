@@ -65,6 +65,7 @@ export default function LaporanScreen() {
                             b.id,
                             b.nama,
                             b.satuan,
+                            b.min_stok,
                             COALESCE(SUM(masuk.jumlah), 0) AS total_pemasukan,
                             COALESCE(SUM(keluar.jumlah), 0) AS total_pemakaian
                         FROM bahan b
@@ -75,7 +76,7 @@ export default function LaporanScreen() {
                             WHERE strftime('%Y-%m', p.tanggal) = ?
                         ) masuk ON b.id = masuk.bahan_id
                         LEFT JOIN (
-                            SELECT pei.bahan_id, pei.jumlah 
+                            SELECT pei.bahan_id, pei.jumlah_pemakaian AS jumlah 
                             FROM pemakaian_item pei 
                             JOIN pemakaian p ON pei.pemakaian_id = p.id 
                             WHERE strftime('%Y-%m', p.tanggal) = ?
@@ -101,54 +102,134 @@ export default function LaporanScreen() {
         }, [periodeLaporan])
     );
 
-    const cetakPDF = async () => {
-        const tableRows = dataLaporan.map((item, index) => `
-            <tr>
-                <td style="text-align:center">${index + 1}</td>
-                <td>${item.nama}</td>
-                <td style="text-align:right">${item.total_pemasukan} ${item.satuan || ''}</td>
-                <td style="text-align:right">${item.total_pemakaian} ${item.satuan || ''}</td>
-            </tr>
-        `).join('');
-
-        const htmlContent = `
-            <html>
-                <head>
-                    <style>
-                        body { font-family: sans-serif; padding: 40px; }
-                        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                        th, td { border: 1px solid #000; padding: 10px; text-align: left; }
-                        th { background-color: #f2f2f2; }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <h1>LAPORAN STOK BIENSTROKER</h1>
-                        <p>Periode: ${bulan}/${tahun}</p>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Nama Bahan</th>
-                                <th>Total Masuk</th>
-                                <th>Total Keluar</th>
-                            </tr>
-                        </thead>
-                        <tbody>${tableRows}</tbody>
-                    </table>
-                </body>
-            </html>
-        `;
-
-        try {
-            const { uri } = await Print.printToFileAsync({ html: htmlContent });
-            await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
-        } catch (error) {
-            Alert.alert("Gagal", "Tidak bisa membuat PDF");
-        }
+    const getNamaBulan = (angkaBulan) => {
+      const bulanIndo = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      ];
+      return bulanIndo[parseInt(angkaBulan) - 1];
     };
+
+//    const cetakPDF = async () => {
+//        const tableRows = dataLaporan.map((item, index) => `
+//            <tr>
+//                <td style="text-align:center">${index + 1}</td>
+//                <td>${item.nama}</td>
+//                <td style="text-align:right">${item.total_pemasukan} ${item.satuan || ''}</td>
+//                <td style="text-align:right">${item.total_pemakaian} ${item.satuan || ''}</td>
+//            </tr>
+//        `).join('');
+//
+//        const htmlContent = `
+//            <html>
+//                <head>
+//                    <style>
+//                        body { font-family: sans-serif; padding: 40px; }
+//                        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; }
+//                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+//                        th, td { border: 1px solid #000; padding: 10px; text-align: left; }
+//                        th { background-color: #f2f2f2; }
+//                    </style>
+//                </head>
+//                <body>
+//                    <div class="header">
+//                        <h1>LAPORAN STOK BIENSTROKER</h1>
+//                        <p>Periode: ${bulan}/${tahun}</p>
+//                    </div>
+//                    <table>
+//                        <thead>
+//                            <tr>
+//                                <th>No</th>
+//                                <th>Nama Bahan</th>
+//                                <th>Total Masuk</th>
+//                                <th>Total Keluar</th>
+//                            </tr>
+//                        </thead>
+//                        <tbody>${tableRows}</tbody>
+//                    </table>
+//                </body>
+//            </html>
+//        `;
+//
+//        try {
+//            const { uri } = await Print.printToFileAsync({ html: htmlContent });
+//            await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
+//        } catch (error) {
+//            Alert.alert("Gagal", "Tidak bisa membuat PDF");
+//        }
+//    };
+
+const cetakPDF = async () => {
+    const tableRows = dataLaporan.map((item, index) => `
+        <tr>
+            <td style="text-align:center">${index + 1}</td>
+            <td style="text-align:center">${item.tanggal}</td>
+            <td>${item.nama}</td>
+            <td style="text-align:center">${item.satuan || '-'}</td>
+            <td style="text-align:center">${item.min_stok || '0'}</td>
+            <td style="text-align:center; color: #10B981; font-weight: bold;">${item.total_pemasukan}</td>
+            <td style="text-align:center; color: #EF4444; font-weight: bold;">${item.total_pemakaian}</td>
+        </tr>
+    `).join('');
+
+    const htmlContent = `
+        <html>
+            <head>
+                <style>
+                    body { font-family: 'Helvetica', 'Arial', sans-serif; color: #333; padding: 20px; }
+                    .header { text-align: center; margin-bottom: 30px; border-bottom: 3px double #10B981; padding-bottom: 20px; }
+                    .cafe-name { font-size: 28px; font-weight: 900; color: #064E3B; margin: 0; text-transform: uppercase; letter-spacing: 2px; }
+                    .title { font-size: 18px; font-weight: bold; margin: 10px 0 5px 0;}
+                    .address { font-size: 12px; color: #64748B; margin: 2px 0; }
+                    .contact { font-size: 11px; color: #64748B; margin-top: 5px; font-style: italic; }
+
+                    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                    th { background-color: #10B981; color: white; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; padding: 12px 8px; border: 1px solid #064E3B; }
+                    td { border: 1px solid #E2E8F0; padding: 10px 8px; font-size: 11px; color: #334155; }
+                    tr:nth-child(even) { background-color: #F8FAFC; }
+
+                    .footer-date { text-align: right; font-size: 10px; color: #94A3B8; margin-top: 30px; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <p class="title">LAPORAN STOK INVENTORI - ${getNamaBulan(bulan)} ${tahun}</p>
+                    <h1 class="cafe-name">CAFE BIEN</h1>
+                    <p class="address">Alamat: Jl. Jendral Sudirman No. 38, Metro Pusat, Kota Metro.</p>
+                    <p class="contact">
+                        No. Telp: 085159411464 | Email: houseofbien@gmail.com | Instagram: @houseofbien
+                    </p>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 5%">No</th>
+                            <th style="width: 15%">Tanggal</th>
+                            <th style="width: 30%">Nama Barang</th>
+                            <th style="width: 10%">Satuan</th>
+                            <th style="width: 15%">Batas Min</th>
+                            <th style="width: 12.5%">Masuk</th>
+                            <th style="width: 12.5%">Keluar</th>
+                        </tr>
+                    </thead>
+                    <tbody>${tableRows}</tbody>
+                </table>
+
+                <div class="footer-date">
+                    Dicetak pada: ${new Date().toLocaleString('id-ID')}
+                </div>
+            </body>
+        </html>
+    `;
+
+    try {
+        const { uri } = await Print.printToFileAsync({ html: htmlContent });
+        await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
+    } catch (error) {
+        Alert.alert("Gagal", "Tidak bisa membuat PDF sesuai template.");
+    }
+};
 
     return (
         <SafeAreaView style={styles.container}>
