@@ -65,6 +65,7 @@ export default function LaporanScreen() {
                             b.id,
                             b.nama,
                             b.satuan,
+                            b.stok,
                             b.min_stok,
                             COALESCE(SUM(masuk.jumlah), 0) AS total_pemasukan,
                             COALESCE(SUM(keluar.jumlah), 0) AS total_pemakaian
@@ -110,63 +111,14 @@ export default function LaporanScreen() {
       return bulanIndo[parseInt(angkaBulan) - 1];
     };
 
-//    const cetakPDF = async () => {
-//        const tableRows = dataLaporan.map((item, index) => `
-//            <tr>
-//                <td style="text-align:center">${index + 1}</td>
-//                <td>${item.nama}</td>
-//                <td style="text-align:right">${item.total_pemasukan} ${item.satuan || ''}</td>
-//                <td style="text-align:right">${item.total_pemakaian} ${item.satuan || ''}</td>
-//            </tr>
-//        `).join('');
-//
-//        const htmlContent = `
-//            <html>
-//                <head>
-//                    <style>
-//                        body { font-family: sans-serif; padding: 40px; }
-//                        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; }
-//                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-//                        th, td { border: 1px solid #000; padding: 10px; text-align: left; }
-//                        th { background-color: #f2f2f2; }
-//                    </style>
-//                </head>
-//                <body>
-//                    <div class="header">
-//                        <h1>LAPORAN STOK BIENSTROKER</h1>
-//                        <p>Periode: ${bulan}/${tahun}</p>
-//                    </div>
-//                    <table>
-//                        <thead>
-//                            <tr>
-//                                <th>No</th>
-//                                <th>Nama Bahan</th>
-//                                <th>Total Masuk</th>
-//                                <th>Total Keluar</th>
-//                            </tr>
-//                        </thead>
-//                        <tbody>${tableRows}</tbody>
-//                    </table>
-//                </body>
-//            </html>
-//        `;
-//
-//        try {
-//            const { uri } = await Print.printToFileAsync({ html: htmlContent });
-//            await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
-//        } catch (error) {
-//            Alert.alert("Gagal", "Tidak bisa membuat PDF");
-//        }
-//    };
-
 const cetakPDF = async () => {
     const tableRows = dataLaporan.map((item, index) => `
         <tr>
             <td style="text-align:center">${index + 1}</td>
-            <td style="text-align:center">${item.tanggal}</td>
             <td>${item.nama}</td>
             <td style="text-align:center">${item.satuan || '-'}</td>
-            <td style="text-align:center">${item.min_stok || '0'}</td>
+            <td style="text-align:center">${(item.stok + item.total_pemasukan + item.total_pemakaian) ?? 0}</td>
+            <td style="text-align:center">${item.stok ?? 0}</td>
             <td style="text-align:center; color: #10B981; font-weight: bold;">${item.total_pemasukan}</td>
             <td style="text-align:center; color: #EF4444; font-weight: bold;">${item.total_pemakaian}</td>
         </tr>
@@ -188,7 +140,7 @@ const cetakPDF = async () => {
                     td { border: 1px solid #E2E8F0; padding: 10px 8px; font-size: 11px; color: #334155; }
                     tr:nth-child(even) { background-color: #F8FAFC; }
 
-                    .footer-date { text-align: right; font-size: 10px; color: #94A3B8; margin-top: 30px; }
+                    .footer-date { text-align: right; font-size: 12px; color: #94A3B8; margin-top: 35px; white-space: nowrap; }
                 </style>
             </head>
             <body>
@@ -205,19 +157,19 @@ const cetakPDF = async () => {
                     <thead>
                         <tr>
                             <th style="width: 5%">No</th>
-                            <th style="width: 15%">Tanggal</th>
                             <th style="width: 30%">Nama Barang</th>
-                            <th style="width: 10%">Satuan</th>
-                            <th style="width: 15%">Batas Min</th>
-                            <th style="width: 12.5%">Masuk</th>
-                            <th style="width: 12.5%">Keluar</th>
+                             <th style="width: 10%">Satuan</th>
+                             <th style="width: 15%">Total Stok</th>
+                             <th style="width: 15%">Sisa Stok</th>
+                             <th style="width: 12.5%">Masuk</th>
+                             <th style="width: 12.5%">Keluar</th>
                         </tr>
                     </thead>
                     <tbody>${tableRows}</tbody>
                 </table>
 
                 <div class="footer-date">
-                    Dicetak pada: ${new Date().toLocaleString('id-ID')}
+                    Tanggal Laporan Dibuat: ${new Date().toLocaleString('id-ID')}
                 </div>
             </body>
         </html>
@@ -269,6 +221,8 @@ const cetakPDF = async () => {
                 <View style={styles.tableHeader}>
                     <Text style={[styles.tableHeaderText, { flex: .5 }]}>No</Text>
                     <Text style={[styles.tableHeaderText, { flex: 2 }]}>Nama Bahan</Text>
+                    <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>Total Stok</Text>
+                    <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>Sisa Stok</Text>
                     <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>Masuk</Text>
                     <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>Keluar</Text>
                 </View>
@@ -290,6 +244,12 @@ const cetakPDF = async () => {
                             </Text>
                             <Text style={[styles.tableRowText, { flex: 2, fontWeight: 'bold', color: COLORS.textDark }]} numberOfLines={2}>
                                 {item.nama}
+                            </Text>
+                            <Text style={[styles.tableRowText, { flex: 1, textAlign: 'center', color: COLORS.textDark }]}>
+                                {(item.stok + item.total_pemasukan + item.total_pemakaian) ?? 0}
+                            </Text>
+                            <Text style={[styles.tableRowText, { flex: 1, textAlign: 'center', color: COLORS.textDark }]}>
+                                {item.stok ?? 0}
                             </Text>
                             <Text style={[styles.tableRowText, styles.valIn, { flex: 1, textAlign: 'center' }]}>
                                 +{item.total_pemasukan}
@@ -374,7 +334,7 @@ const styles = StyleSheet.create({
     tableHeaderText: {
         color: COLORS.white,
         fontWeight: 'bold',
-        fontSize: 14,
+        fontSize: isTablet ? 14 : 11,
     },
     tableRow: {
         flexDirection: 'row',
@@ -385,7 +345,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     tableRowText: {
-        fontSize: 14,
+        fontSize: isTablet ? 14 : 11,
     },
     valIn: {
         color: COLORS.primary,

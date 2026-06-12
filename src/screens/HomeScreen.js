@@ -20,12 +20,12 @@ const { width } = Dimensions.get('window');
 const isTablet = width > 600;
 
 const COLORS = {
-    primary: '#10B981',     // Emerald Green
-    secondary: '#059669',   // Darker Emerald
-    accent: '#34D399',      // Light Emerald
-    background: '#F0FDFA',  // Teal sangat muda untuk bg
+    primary: '#10B981',
+    secondary: '#059669',  
+    accent: '#34D399',    
+    background: '#F0FDFA',
     white: '#FFFFFF',
-    textDark: '#064E3B',    // Hijau sangat gelap untuk teks
+    textDark: '#064E3B', 
 };
 
 export default function HomeScreen({ navigation }) {
@@ -79,7 +79,6 @@ export default function HomeScreen({ navigation }) {
 
     return (
         <SafeAreaView style={styles.container}>
-            {/* HEADER */}
             <View style={styles.header}>
                 <Text style={styles.brandName}>BienStroker</Text>
                 <TouchableOpacity onPress={() => setMenuVisible(true)}>
@@ -87,7 +86,6 @@ export default function HomeScreen({ navigation }) {
                 </TouchableOpacity>
             </View>
 
-            {/* MODAL MENU */}
             <Modal
                 visible={menuVisible}
                 transparent={true}
@@ -120,7 +118,6 @@ export default function HomeScreen({ navigation }) {
                     Ringkasan {new Date().toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </Text>
 
-                {/* STATS CARDS */}
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsScroll} contentContainerStyle={{ flexGrow: 1, justifyContent: 'space-evenly' }}>
                     {/* Card Masuk - Minty Green */}
                     <LinearGradient

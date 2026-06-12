@@ -15,12 +15,12 @@ import { AuthContext } from '../../AuthContext';
 
 const { width } = Dimensions.get('window');
 const isTablet = width > 600;
-const numColumns = isTablet ? 2 : 1; // 2 Kolom untuk tablet, 1 untuk HP
+const numColumns = 1;
 
 const COLORS = {
-  primary: '#10B981',      // Emerald Green
-  primaryLight: '#F0FDFA', // Background Mint
-  textDark: '#064E3B',     // Hijau Gelap
+  primary: '#10B981',
+  primaryLight: '#F0FDFA',
+  textDark: '#064E3B',
   white: '#FFFFFF',
   border: '#E2E8F0',
   slate: '#64748B',
@@ -90,7 +90,7 @@ export default function PemasukanBarangScreen({ navigation }) {
 
       <FlatList
         data={riwayatPemasukan}
-        key={isTablet ? 'tablet' : 'mobile'} // Memaksa re-render jika kolom berubah
+        key={isTablet ? 'tablet' : 'mobile'}
         numColumns={numColumns}
         keyExtractor={(item, index) => index.toString()}
         renderItem={renderItem}
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 15,
-    alignSelf: 'flex-start', // Agar tombol tidak lebar penuh
+    alignSelf: 'flex-start',
     elevation: 4,
     shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 4 },
@@ -193,57 +193,3 @@ const styles = StyleSheet.create({
     fontWeight: '500'
   }
 });
-
-// const styles = StyleSheet.create({
-//   container: { flex: 1, backgroundColor: '#F5F7FA' },
-//   header: {
-//     paddingHorizontal: 20,
-//     paddingTop: 15,
-//     backgroundColor: '#F3F6FA',
-//   },
-//   actionBtn: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     backgroundColor: '#E3F2FD',
-//     alignItems: 'center',
-//     paddingVertical: 10,
-//     paddingHorizontal: 15,
-//     borderRadius: 10,
-//     width: '18%',
-//   },
-//   btnText: {
-//     color: '#000',
-//     fontWeight: 'bold',
-//     fontSize: 14
-//   },
-//   btnIcon: {
-//     marginRight: 3,
-//   },
-//   title: { fontSize: 22, fontWeight: 'bold', color: '#333' },
-//   listPadding: { padding: 15, paddingBottom: 30 },
-//   card: {
-//     backgroundColor: '#FFF',
-//     borderRadius: 12,
-//     padding: 15,
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     marginBottom: 10,
-//     elevation: 2,
-//     shadowColor: '#000',
-//     shadowOffset: { width: 0, height: 1 },
-//     shadowOpacity: 0.1,
-//     shadowRadius: 3,
-//   },
-//   listIcon: {
-//     marginRight: 8
-//   },
-//   content: { flex: 1 },
-//   namaBahan: { fontSize: 16, fontWeight: 'bold', color: '#333' },
-//   tglText: { fontSize: 14, color: '#484848', marginTop: 2 },
-//   detailText: { fontSize: 12, color: '#999' },
-//   jumlahContainer: { alignItems: 'flex-end' },
-//   jumlahText: { fontSize: 16, fontWeight: 'bold', color: '#4CAF50' },
-//   unitText: { fontSize: 10, color: '#999', textTransform: 'uppercase' },
-//   emptyState: { alignItems: 'center', marginTop: 100 },
-//   emptyText: { color: '#999', fontSize: 16 }
-// });

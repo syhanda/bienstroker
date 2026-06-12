@@ -65,16 +65,17 @@
       ],
       "expo-background-task"
     ],
-    "extra": {
-      "eas": {
-        "projectId": "20926229-a8a8-4348-a5c8-555455dbd61b"
-      }
-    },
     "runtimeVersion": {
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/20926229-a8a8-4348-a5c8-555455dbd61b"
-    }
+      "url": "https://u.expo.dev/5fa17dc3-5942-47fc-9e5d-b4a3e3ce540d"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "5fa17dc3-5942-47fc-9e5d-b4a3e3ce540d"
+      }
+    },
+    "owner": "syhanda"
   }
 }

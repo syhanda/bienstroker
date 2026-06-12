@@ -28,7 +28,7 @@ const isTablet = width > 600;
 const COLORS = {
     primary: '#10B981',      // Emerald Green
     primaryLight: '#F0FDFA', // Mint Background
-    textDark: '#064E3B',     // Hijau Gelap
+    textDark: '#064E3B',     
     white: '#FFFFFF',
     border: '#E2E8F0',
     slate: '#64748B',

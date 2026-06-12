@@ -154,7 +154,7 @@ export default function BahanFormScreen({ route, navigation }) {
 				setIsSaved(true);
 				Alert.alert(
 					itemId ? "Berhasil Diubah" : "Berhasil Disimpan",
-					`Bahan "${nama}" telah dicatat.`,
+					`Barang "${nama}" telah dicatat.`,
 					[{ text: "OK", onPress: () => navigation.goBack() }]
 				);
 			}
@@ -164,11 +164,6 @@ export default function BahanFormScreen({ route, navigation }) {
 		}
 	}
 
-	// const handleBatal = () => {
-	// 	cleanupGambar();
-	// 	navigation.goBack();
-	// };
-
 	return (
 		<KeyboardAvoidingView
 			behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -176,11 +171,9 @@ export default function BahanFormScreen({ route, navigation }) {
 		>
 			<TouchableWithoutFeedback onPress={Keyboard.dismiss}>
 				<ScrollView contentContainerStyle={styles.scrollContainer}>
-					{/* Pembungkus Utama dengan Max Width untuk Tablet */}
 					<View style={styles.responsiveWrapper}>
 
 						<View style={styles.formContainer}>
-							{/* KIRI: Area Foto */}
 							<View style={styles.formLeft}>
 								<TouchableOpacity style={styles.uploadBox} onPress={ambilGambar}>
 									{gambarUri ? (
