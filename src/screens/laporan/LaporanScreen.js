@@ -140,7 +140,11 @@ const cetakPDF = async () => {
                     td { border: 1px solid #E2E8F0; padding: 10px 8px; font-size: 11px; color: #334155; }
                     tr:nth-child(even) { background-color: #F8FAFC; }
 
-                    .footer-date { text-align: right; font-size: 12px; color: #94A3B8; margin-top: 35px; white-space: nowrap; }
+                    .footer-section { display: flex; justify-content: flex-end; margin-top: 40px; }
+                    .signature-block { text-align: center; min-width: 160px; }
+                    .signature-label { font-size: 12px; color: #334155; font-weight: bold; margin-bottom: 4px; }
+                    .signature-city-date { font-size: 11px; color: #64748B; margin-bottom: 70px; }
+                    .signature-line { border-top: 1px solid #334155; padding-top: 6px; font-size: 12px; font-weight: bold; color: #064E3B; }
                 </style>
             </head>
             <body>
@@ -168,8 +172,12 @@ const cetakPDF = async () => {
                     <tbody>${tableRows}</tbody>
                 </table>
 
-                <div class="footer-date">
-                    Tanggal Laporan Dibuat: ${new Date().toLocaleString('id-ID')}
+                <div class="footer-section">
+                    <div class="signature-block">
+                        <div class="signature-label">Mengetahui,</div>
+                        <div class="signature-city-date">Metro, ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                        <div class="signature-line">Kurniawan</div>
+                    </div>
                 </div>
             </body>
         </html>
