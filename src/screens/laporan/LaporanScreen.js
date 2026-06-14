@@ -176,7 +176,7 @@ const cetakPDF = async () => {
                     <div class="signature-block">
                         <div class="signature-label">Mengetahui,</div>
                         <div class="signature-city-date">Metro, ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-                        <div class="signature-line">Kurniawan</div>
+                        <div class="signature-line">Atmaka Yoni Kurniawan</div>
                     </div>
                 </div>
             </body>
